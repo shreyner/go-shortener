@@ -1,4 +1,4 @@
-package handler_test
+package handlers_test
 
 import (
 	"bytes"
@@ -7,20 +7,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/shreyner/go-shortener/internal/handler"
+	"github.com/shreyner/go-shortener/internal/handlers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestIndexHandler(t *testing.T) {
-
 	t.Run("shuold create link", func(t *testing.T) {
 		storeMock := map[string]string{}
 		request := httptest.NewRequest("POST", "/", bytes.NewBufferString("https://yandex.ru"))
 		request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 		w := httptest.NewRecorder()
-		h := handler.IndexHandler(storeMock)
+		h := handlers.IndexHandler(storeMock)
 
 		h.ServeHTTP(w, request)
 		result := w.Result()
@@ -46,7 +45,7 @@ func TestIndexHandler(t *testing.T) {
 		request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 		w := httptest.NewRecorder()
-		h := handler.IndexHandler(storeMock)
+		h := handlers.IndexHandler(storeMock)
 
 		h.ServeHTTP(w, request)
 		result := w.Result()
@@ -60,7 +59,7 @@ func TestIndexHandler(t *testing.T) {
 		request.Header.Add("Content-Type", "text/plain")
 
 		w := httptest.NewRecorder()
-		h := handler.IndexHandler(storeMock)
+		h := handlers.IndexHandler(storeMock)
 
 		h.ServeHTTP(w, request)
 		result := w.Result()
@@ -73,7 +72,7 @@ func TestIndexHandler(t *testing.T) {
 		request := httptest.NewRequest("GET", "/", nil)
 
 		w := httptest.NewRecorder()
-		h := handler.IndexHandler(storeMock)
+		h := handlers.IndexHandler(storeMock)
 
 		h.ServeHTTP(w, request)
 		result := w.Result()
@@ -86,7 +85,7 @@ func TestIndexHandler(t *testing.T) {
 		request := httptest.NewRequest("GET", "/some/invalid", nil)
 
 		w := httptest.NewRecorder()
-		h := handler.IndexHandler(storeMock)
+		h := handlers.IndexHandler(storeMock)
 
 		h.ServeHTTP(w, request)
 		result := w.Result()
@@ -99,7 +98,7 @@ func TestIndexHandler(t *testing.T) {
 		request := httptest.NewRequest("POST", "/some/invalid", nil)
 
 		w := httptest.NewRecorder()
-		h := handler.IndexHandler(storeMock)
+		h := handlers.IndexHandler(storeMock)
 
 		h.ServeHTTP(w, request)
 		result := w.Result()
@@ -112,7 +111,7 @@ func TestIndexHandler(t *testing.T) {
 		request := httptest.NewRequest("POST", "/some", nil)
 
 		w := httptest.NewRecorder()
-		h := handler.IndexHandler(storeMock)
+		h := handlers.IndexHandler(storeMock)
 
 		h.ServeHTTP(w, request)
 		result := w.Result()
@@ -127,7 +126,7 @@ func TestIndexHandler(t *testing.T) {
 		request := httptest.NewRequest("GET", "/yand", nil)
 
 		w := httptest.NewRecorder()
-		h := handler.IndexHandler(storeMock)
+		h := handlers.IndexHandler(storeMock)
 
 		h.ServeHTTP(w, request)
 		result := w.Result()
@@ -141,7 +140,7 @@ func TestIndexHandler(t *testing.T) {
 		request := httptest.NewRequest("GET", "/TGss", nil)
 
 		w := httptest.NewRecorder()
-		h := handler.IndexHandler(storeMock)
+		h := handlers.IndexHandler(storeMock)
 
 		h.ServeHTTP(w, request)
 		result := w.Result()
