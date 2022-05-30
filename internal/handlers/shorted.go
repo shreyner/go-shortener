@@ -10,8 +10,8 @@ import (
 )
 
 type ShortedService interface {
-	Create(url string) (core.ShortUrl, error)
-	GetById(key string) (core.ShortUrl, bool)
+	Create(url string) (core.ShortURL, error)
+	GetByID(key string) (core.ShortURL, bool)
 }
 
 type ShortedHandler struct {
@@ -49,28 +49,28 @@ func (sh *ShortedHandler) ShortedCreate(wr http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	shortUrl, err := sh.ShorterService.Create(string(body))
+	shortURL, err := sh.ShorterService.Create(string(body))
 	if err != nil {
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	wr.WriteHeader(http.StatusCreated)
-	wr.Write([]byte(shortUrl.Id))
+	wr.Write([]byte(shortURL.ID))
 }
 
 func (sh *ShortedHandler) ShortedGet(wr http.ResponseWriter, r *http.Request) {
 	urlPart := removeEmptyStrings(strings.Split(r.URL.Path, "/"))
 	shortCode := urlPart[0]
 
-	shortedUrl, ok := sh.ShorterService.GetById(shortCode)
+	shortURL, ok := sh.ShorterService.GetByID(shortCode)
 
 	if !ok {
 		http.Error(wr, "Not Found", http.StatusNotFound)
 		return
 	}
 
-	http.Redirect(wr, r, shortedUrl.Url, http.StatusPermanentRedirect)
+	http.Redirect(wr, r, shortURL.URL, http.StatusPermanentRedirect)
 }
 
 func removeEmptyStrings(s []string) []string {

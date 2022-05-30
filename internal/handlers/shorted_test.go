@@ -23,14 +23,14 @@ type MyMockService struct {
 	mock.Mock
 }
 
-func (m *MyMockService) Create(url string) (core.ShortUrl, error) {
+func (m *MyMockService) Create(url string) (core.ShortURL, error) {
 	args := m.Called(url)
-	return args.Get(0).(core.ShortUrl), args.Error(1)
+	return args.Get(0).(core.ShortURL), args.Error(1)
 }
 
-func (m *MyMockService) GetById(key string) (core.ShortUrl, bool) {
+func (m *MyMockService) GetByID(key string) (core.ShortURL, bool) {
 	args := m.Called(key)
-	return args.Get(0).(core.ShortUrl), args.Bool(1)
+	return args.Get(0).(core.ShortURL), args.Bool(1)
 }
 
 func testRequest(t *testing.T, ts *httptest.Server, method, path, contentType, body string) (*http.Response, string) {
@@ -48,8 +48,9 @@ func testRequest(t *testing.T, ts *httptest.Server, method, path, contentType, b
 	}
 
 	resp, err := client.Do(req)
-	defer resp.Body.Close()
 	require.NoError(t, err)
+
+	defer resp.Body.Close()
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	require.NoError(t, err)
@@ -64,14 +65,14 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 		r := NewRouter(mockService)
 		ts := httptest.NewServer(r)
 
-		mockService.On("Create", "https://ya.ru/").Return(core.ShortUrl{Url: "https://ya.ru/", Id: "ya"}, nil)
+		mockService.On("Create", "https://ya.ru/").Return(core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
 
-		resp, body := testRequest(t, ts, http.MethodPost, "/", ContentType, "https://ya.ru/")
+		resp, respData := testRequest(t, ts, http.MethodPost, "/", ContentType, "https://ya.ru/")
 
 		mockService.AssertExpectations(t)
 		mockService.AssertCalled(t, "Create", "https://ya.ru/")
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
-		assert.Equal(t, "ya", body)
+		assert.Equal(t, "ya", respData)
 	})
 
 	t.Run("should error for incorrect url", func(t *testing.T) {
@@ -131,12 +132,12 @@ func TestShortedHandler_ShortedGet(t *testing.T) {
 		r := NewRouter(mockService)
 		ts := httptest.NewServer(r)
 
-		mockService.On("GetById", "asdd").Return(core.ShortUrl{Id: "asdd", Url: "https://ya.ru"}, true)
+		mockService.On("GetByID", "asdd").Return(core.ShortURL{ID: "asdd", URL: "https://ya.ru"}, true)
 
 		resp, _ := testRequest(t, ts, http.MethodGet, "/asdd", "", "")
 
 		mockService.AssertExpectations(t)
-		mockService.AssertCalled(t, "GetById", "asdd")
+		mockService.AssertCalled(t, "GetByID", "asdd")
 		require.Equal(t, http.StatusPermanentRedirect, resp.StatusCode)
 		assert.Equal(t, "https://ya.ru", resp.Header.Get("Location"))
 	})
@@ -147,12 +148,12 @@ func TestShortedHandler_ShortedGet(t *testing.T) {
 		r := NewRouter(mockService)
 		ts := httptest.NewServer(r)
 
-		mockService.On("GetById", "not").Return(core.ShortUrl{}, false)
+		mockService.On("GetByID", "not").Return(core.ShortURL{}, false)
 
 		resp, _ := testRequest(t, ts, http.MethodGet, "/not", "", "")
 
 		mockService.AssertExpectations(t)
-		mockService.AssertCalled(t, "GetById", "not")
+		mockService.AssertCalled(t, "GetByID", "not")
 		require.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
 }

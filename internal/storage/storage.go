@@ -1,11 +1,11 @@
 package storage
 
 type Storage struct {
-	ShortUrlRepository *ShortUrlRepository
+	ShortUrlRepository *ShortURLRepository
 }
 
 func NewStorage() *Storage {
 	return &Storage{
-		ShortUrlRepository: NewShortUrlStore(),
+		ShortUrlRepository: NewShortURLStore(),
 	}
 }

@@ -2,23 +2,23 @@ package storage
 
 import "github.com/shreyner/go-shortener/internal/core"
 
-type ShortUrlRepository struct {
-	store map[string]core.ShortUrl
+type ShortURLRepository struct {
+	store map[string]core.ShortURL
 }
 
-func NewShortUrlStore() *ShortUrlRepository {
-	return &ShortUrlRepository{
-		store: map[string]core.ShortUrl{},
+func NewShortURLStore() *ShortURLRepository {
+	return &ShortURLRepository{
+		store: map[string]core.ShortURL{},
 	}
 }
 
-func (s *ShortUrlRepository) Add(shortedUrl core.ShortUrl) error {
-	s.store[shortedUrl.Id] = shortedUrl
+func (s *ShortURLRepository) Add(shortURL core.ShortURL) error {
+	s.store[shortURL.ID] = shortURL
 
 	return nil
 }
 
-func (s *ShortUrlRepository) GetById(id string) (core.ShortUrl, bool) {
-	shortUrl, ok := s.store[id]
-	return shortUrl, ok
+func (s *ShortURLRepository) GetByID(id string) (core.ShortURL, bool) {
+	shortURL, ok := s.store[id]
+	return shortURL, ok
 }

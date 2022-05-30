@@ -5,37 +5,37 @@ import (
 	"math/rand"
 )
 
-type ShortUrlRepository interface {
-	Add(shortedUrl core.ShortUrl) error
-	GetById(id string) (core.ShortUrl, bool)
+type ShortURLRepository interface {
+	Add(shortedURL core.ShortURL) error
+	GetByID(id string) (core.ShortURL, bool)
 }
 
 type Shorter struct {
-	shorterRepository ShortUrlRepository
+	shorterRepository ShortURLRepository
 }
 
-func NewShorter(shorterRepository ShortUrlRepository) *Shorter {
+func NewShorter(shorterRepository ShortURLRepository) *Shorter {
 	return &Shorter{shorterRepository: shorterRepository}
 }
 
-func (s *Shorter) Create(url string) (core.ShortUrl, error) {
-	id := generateUrlId()
-	shortUrl := core.ShortUrl{Id: id, Url: url}
+func (s *Shorter) Create(url string) (core.ShortURL, error) {
+	id := generateURLID()
+	shortURL := core.ShortURL{ID: id, URL: url}
 
-	err := s.shorterRepository.Add(shortUrl)
+	err := s.shorterRepository.Add(shortURL)
 
 	if err != nil {
-		return core.ShortUrl{}, err
+		return core.ShortURL{}, err
 	}
 
-	return shortUrl, nil
+	return shortURL, nil
 }
 
-func (s *Shorter) GetById(id string) (core.ShortUrl, bool) {
-	return s.shorterRepository.GetById(id)
+func (s *Shorter) GetByID(id string) (core.ShortURL, bool) {
+	return s.shorterRepository.GetByID(id)
 }
 
-func generateUrlId() string {
+func generateURLID() string {
 	return randSeq(4)
 }
 
