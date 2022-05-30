@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/shreyner/go-shortener/internal/core"
 	"io"
 	"mime"
@@ -56,7 +57,7 @@ func (sh *ShortedHandler) ShortedCreate(wr http.ResponseWriter, r *http.Request)
 	}
 
 	wr.WriteHeader(http.StatusCreated)
-	wr.Write([]byte(shortURL.ID))
+	fmt.Fprintf(wr, "http://localhost:8080/%s", shortURL.ID)
 }
 
 func (sh *ShortedHandler) ShortedGet(wr http.ResponseWriter, r *http.Request) {
@@ -70,7 +71,7 @@ func (sh *ShortedHandler) ShortedGet(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(wr, r, shortURL.URL, http.StatusPermanentRedirect)
+	http.Redirect(wr, r, shortURL.URL, http.StatusTemporaryRedirect)
 }
 
 func removeEmptyStrings(s []string) []string {

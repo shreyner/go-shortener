@@ -142,7 +142,7 @@ func TestShortedHandler_ShortedGet(t *testing.T) {
 
 		mockService.AssertExpectations(t)
 		mockService.AssertCalled(t, "GetByID", "asdd")
-		require.Equal(t, http.StatusPermanentRedirect, resp.StatusCode)
+		require.Equal(t, http.StatusTemporaryRedirect, resp.StatusCode)
 		assert.Equal(t, "https://ya.ru", resp.Header.Get("Location"))
 	})
 
