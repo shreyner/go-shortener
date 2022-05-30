@@ -11,7 +11,7 @@ var listerServerAddress = ":8080"
 
 func NewApp() {
 	storages := storage.NewStorage()
-	services := service.NewService(storages.ShortUrlRepository)
+	services := service.NewService(storages.ShortURLRepository)
 
 	router := handlers.NewRouter(services.ShorterService)
 	serv := server.NewServer(listerServerAddress, router)
