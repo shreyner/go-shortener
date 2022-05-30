@@ -76,7 +76,7 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 		mockService.AssertExpectations(t)
 		mockService.AssertCalled(t, "Create", "https://ya.ru/")
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
-		assert.Equal(t, "ya", respData)
+		assert.Equal(t, "http://localhost:8080/ya", respData)
 	})
 
 	t.Run("should error for incorrect url", func(t *testing.T) {
