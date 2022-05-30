@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -51,13 +50,10 @@ func testRequest(t *testing.T, ts *httptest.Server, method, path, contentType, b
 	resp, err := client.Do(req)
 	require.NoError(t, err)
 
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		require.NoError(t, err)
-	}(resp.Body)
-
 	respBody, err := ioutil.ReadAll(resp.Body)
 	require.NoError(t, err)
+
+	defer resp.Body.Close()
 
 	return resp, string(respBody)
 }
@@ -71,12 +67,13 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 
 		mockService.On("Create", "https://ya.ru/").Return(core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
 
-		resp, respData := testRequest(t, ts, http.MethodPost, "/", ContentType, "https://ya.ru/")
+		resp, respBody := testRequest(t, ts, http.MethodPost, "/", ContentType, "https://ya.ru/")
+		defer resp.Body.Close()
 
 		mockService.AssertExpectations(t)
 		mockService.AssertCalled(t, "Create", "https://ya.ru/")
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
-		assert.Equal(t, "http://localhost:8080/ya", respData)
+		assert.Equal(t, "http://localhost:8080/ya", respBody)
 	})
 
 	t.Run("should error for incorrect url", func(t *testing.T) {
@@ -86,6 +83,7 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 		ts := httptest.NewServer(r)
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/", ContentType, "yyy")
+		defer resp.Body.Close()
 
 		mockService.AssertNotCalled(t, "Create")
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
@@ -98,6 +96,7 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 		ts := httptest.NewServer(r)
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/", "text/html; charset=utf8", "https://ya.ru/")
+		defer resp.Body.Close()
 
 		mockService.AssertNotCalled(t, "Create")
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
@@ -110,6 +109,7 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 		ts := httptest.NewServer(r)
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/some", ContentType, "https://ya.ru/")
+		defer resp.Body.Close()
 
 		mockService.AssertNotCalled(t, "Create")
 		assert.Equal(t, http.StatusMethodNotAllowed, resp.StatusCode)
@@ -123,6 +123,7 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 	//	ts := httptest.NewServer(r)
 	//
 	//	resp, _ := testRequest(t, ts, http.MethodPost, "/", "", "https://ya.ru/")
+	//  defer resp.Body.Close()
 	//
 	//	mockService.AssertNotCalled(t, "Create")
 	//	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
@@ -139,6 +140,7 @@ func TestShortedHandler_ShortedGet(t *testing.T) {
 		mockService.On("GetByID", "asdd").Return(core.ShortURL{ID: "asdd", URL: "https://ya.ru"}, true)
 
 		resp, _ := testRequest(t, ts, http.MethodGet, "/asdd", "", "")
+		defer resp.Body.Close()
 
 		mockService.AssertExpectations(t)
 		mockService.AssertCalled(t, "GetByID", "asdd")
@@ -155,6 +157,7 @@ func TestShortedHandler_ShortedGet(t *testing.T) {
 		mockService.On("GetByID", "not").Return(core.ShortURL{}, false)
 
 		resp, _ := testRequest(t, ts, http.MethodGet, "/not", "", "")
+		defer resp.Body.Close()
 
 		mockService.AssertExpectations(t)
 		mockService.AssertCalled(t, "GetByID", "not")
