@@ -30,7 +30,7 @@ func (sh *ShortedHandler) ShortedCreate(wr http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if mediaType != "application/x-www-form-urlencoded" {
+	if mediaType != "text/plain" {
 		http.Error(wr, "bad request", http.StatusBadRequest)
 		return
 	}

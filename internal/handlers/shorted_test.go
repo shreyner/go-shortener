@@ -16,7 +16,7 @@ import (
 // TODO: Проверять сообщения при плохих ответах
 
 var (
-	ContentType = "application/x-www-form-urlencoded"
+	ContentType = "text/plain; charset=utf-8"
 )
 
 type MyMockService struct {
@@ -48,12 +48,11 @@ func testRequest(t *testing.T, ts *httptest.Server, method, path, contentType, b
 	}
 
 	resp, err := client.Do(req)
+	defer resp.Body.Close()
 	require.NoError(t, err)
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	require.NoError(t, err)
-
-	defer resp.Body.Close()
 
 	return resp, string(respBody)
 }
