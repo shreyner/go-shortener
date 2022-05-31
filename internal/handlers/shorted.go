@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"github.com/shreyner/go-shortener/internal/core"
 	"io"
 	"mime"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 type ShortedService interface {
@@ -61,8 +61,7 @@ func (sh *ShortedHandler) ShortedCreate(wr http.ResponseWriter, r *http.Request)
 }
 
 func (sh *ShortedHandler) ShortedGet(wr http.ResponseWriter, r *http.Request) {
-	urlPart := removeEmptyStrings(strings.Split(r.URL.Path, "/"))
-	shortCode := urlPart[0]
+	shortCode := chi.URLParam(r, "id")
 
 	shortURL, ok := sh.ShorterService.GetByID(shortCode)
 
@@ -72,14 +71,4 @@ func (sh *ShortedHandler) ShortedGet(wr http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(wr, r, shortURL.URL, http.StatusTemporaryRedirect)
-}
-
-func removeEmptyStrings(s []string) []string {
-	var r []string
-	for _, str := range s {
-		if str != "" {
-			r = append(r, str)
-		}
-	}
-	return r
 }
