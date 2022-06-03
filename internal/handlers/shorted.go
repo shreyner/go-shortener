@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/shreyner/go-shortener/internal/core"
 	"io"
 	"mime"
 	"net/http"
 	"net/url"
+
+	core "github.com/shreyner/go-shortener/internal/core"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type ShortedService interface {
@@ -23,7 +25,7 @@ func NewShortedHandler(shorterService ShortedService) *ShortedHandler {
 	return &ShortedHandler{ShorterService: shorterService}
 }
 
-func (sh *ShortedHandler) ShortedCreate(wr http.ResponseWriter, r *http.Request) {
+func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
 	if err != nil {
@@ -60,7 +62,7 @@ func (sh *ShortedHandler) ShortedCreate(wr http.ResponseWriter, r *http.Request)
 	fmt.Fprintf(wr, "http://localhost:8080/%s", shortURL.ID)
 }
 
-func (sh *ShortedHandler) ShortedGet(wr http.ResponseWriter, r *http.Request) {
+func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
 	shortCode := chi.URLParam(r, "id")
 
 	shortURL, ok := sh.ShorterService.GetByID(shortCode)

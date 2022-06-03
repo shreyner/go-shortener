@@ -1,8 +1,9 @@
 package service
 
 import (
-	"github.com/shreyner/go-shortener/internal/core"
 	"math/rand"
+
+	"github.com/shreyner/go-shortener/internal/core"
 )
 
 type ShortURLRepository interface {
