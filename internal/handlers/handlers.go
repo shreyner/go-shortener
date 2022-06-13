@@ -17,7 +17,7 @@ func NewRouter(shorterService ShortedService) *chi.Mux {
 	shortedHandler := NewShortedHandler(shorterService)
 
 	r.Route("/api", func(r chi.Router) {
-		r.Post("/shorten", shortedHandler.ApiCreate)
+		r.Post("/shorten", shortedHandler.APICreate)
 	})
 	r.Post("/", shortedHandler.Create)
 	r.Get("/{id}", shortedHandler.Get)
