@@ -190,6 +190,26 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		assert.Equal(t, "{\"result\":\"http://localhost:8080/ya\"}", respBody)
 	})
 
+	t.Run("should return currect ContentType", func(t *testing.T) {
+		contentType := "application/json"
+		acceptType := "application/json"
+		mockService := new(MyMockService)
+
+		r := NewRouter(mockService)
+		ts := httptest.NewServer(r)
+
+		mockService.On("Create", "https://ya.ru/").Return(core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
+
+		resp, respBody := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, acceptType, "{\"url\":\"https://ya.ru/\"}")
+		defer resp.Body.Close()
+
+		mockService.AssertExpectations(t)
+		mockService.AssertCalled(t, "Create", "https://ya.ru/")
+		assert.Equal(t, http.StatusCreated, resp.StatusCode)
+		assert.Equal(t, resp.Header.Get("Content-type"), "text/plain; charset=utf-8")
+		assert.Equal(t, "{\"result\":\"http://localhost:8080/ya\"}", respBody)
+	})
+
 	t.Run("should error for incorrect url", func(t *testing.T) {
 		contentType := "application/json"
 		acceptType := "application/json"

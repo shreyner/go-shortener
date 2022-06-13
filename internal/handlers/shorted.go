@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	CONTENT_TYPE_JSON = "application/json"
+	ContentTypeJSON = "application/json"
 )
 
 type ShortedService interface {
@@ -82,14 +82,14 @@ func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
 }
 
 type ShortedCreateDTO struct {
-	Url string `json:"url"`
+	URL string `json:"url"`
 }
 
 type ShortedResponseDTO struct {
 	Result string `json:"result"`
 }
 
-func (sh *ShortedHandler) ApiCreate(wr http.ResponseWriter, r *http.Request) {
+func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
 	if err != nil {
@@ -97,7 +97,7 @@ func (sh *ShortedHandler) ApiCreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if mediaType != CONTENT_TYPE_JSON {
+	if mediaType != ContentTypeJSON {
 		http.Error(wr, "bad request", http.StatusBadRequest)
 		return
 	}
@@ -105,14 +105,14 @@ func (sh *ShortedHandler) ApiCreate(wr http.ResponseWriter, r *http.Request) {
 	acceptHeader := r.Header.Get("Accept")
 
 	if acceptHeader != "" {
-		crossAccepting, err := accept.Negotiate(acceptHeader, CONTENT_TYPE_JSON)
+		crossAccepting, err := accept.Negotiate(acceptHeader, ContentTypeJSON)
 
 		if err != nil {
 			http.Error(wr, "bad headers", http.StatusBadRequest)
 			return
 		}
 
-		if crossAccepting != CONTENT_TYPE_JSON {
+		if crossAccepting != ContentTypeJSON {
 			http.Error(wr, "bad accepting content", http.StatusNotAcceptable)
 			return
 		}
@@ -133,12 +133,12 @@ func (sh *ShortedHandler) ApiCreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := url.ParseRequestURI(string(shortedCreateDTO.Url)); err != nil {
+	if _, err := url.ParseRequestURI(string(shortedCreateDTO.URL)); err != nil {
 		http.Error(wr, "Invalid url", http.StatusBadRequest)
 		return
 	}
 
-	shortURL, err := sh.ShorterService.Create(shortedCreateDTO.Url)
+	shortURL, err := sh.ShorterService.Create(shortedCreateDTO.URL)
 
 	if err != nil {
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
@@ -157,6 +157,6 @@ func (sh *ShortedHandler) ApiCreate(wr http.ResponseWriter, r *http.Request) {
 	}
 
 	wr.WriteHeader(http.StatusCreated)
-	wr.Header().Add("Content-type", CONTENT_TYPE_JSON)
+	wr.Header().Add("Content-type", "text/plain; charset=utf-8")
 	fmt.Fprint(wr, string(responseBody))
 }
