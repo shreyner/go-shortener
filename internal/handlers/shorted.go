@@ -25,10 +25,11 @@ type ShortedService interface {
 
 type ShortedHandler struct {
 	ShorterService ShortedService
+	baseUrl        string
 }
 
-func NewShortedHandler(shorterService ShortedService) *ShortedHandler {
-	return &ShortedHandler{ShorterService: shorterService}
+func NewShortedHandler(baseURL string, shorterService ShortedService) *ShortedHandler {
+	return &ShortedHandler{ShorterService: shorterService, baseUrl: baseURL}
 }
 
 func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
@@ -65,7 +66,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	}
 
 	wr.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(wr, "http://localhost:8080/%s", shortURL.ID)
+	fmt.Fprintf(wr, "%s/%s", sh.baseUrl, shortURL.ID)
 }
 
 func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
@@ -145,7 +146,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resulturl := fmt.Sprintf("http://localhost:8080/%s", shortURL.ID)
+	resulturl := fmt.Sprintf("%s/%s", sh.baseUrl, shortURL.ID)
 
 	responseCreateDTO := ShortedResponseDTO{Result: resulturl}
 
