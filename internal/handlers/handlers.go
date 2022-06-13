@@ -5,7 +5,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter(shorterService ShortedService) *chi.Mux {
+func NewRouter(baseURL string, shorterService ShortedService) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -14,7 +14,7 @@ func NewRouter(shorterService ShortedService) *chi.Mux {
 	r.Use(middleware.Recoverer)
 
 	// handlers
-	shortedHandler := NewShortedHandler(shorterService)
+	shortedHandler := NewShortedHandler(baseURL, shorterService)
 
 	r.Route("/api", func(r chi.Router) {
 		r.Post("/shorten", shortedHandler.APICreate)
