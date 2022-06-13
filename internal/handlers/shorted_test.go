@@ -186,7 +186,7 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 
 		mockService.AssertExpectations(t)
 		mockService.AssertCalled(t, "Create", "https://ya.ru/")
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 		assert.Equal(t, "{\"result\":\"http://localhost:8080/ya\"}", respBody)
 	})
 

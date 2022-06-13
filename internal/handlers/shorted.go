@@ -156,6 +156,7 @@ func (sh *ShortedHandler) ApiCreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	wr.WriteHeader(http.StatusCreated)
 	wr.Header().Add("Content-type", CONTENT_TYPE_JSON)
 	fmt.Fprint(wr, string(responseBody))
 }
