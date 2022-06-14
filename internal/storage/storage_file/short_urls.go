@@ -1,4 +1,4 @@
-package storageFile
+package storagefile
 
 import (
 	"encoding/json"

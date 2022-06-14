@@ -1,4 +1,4 @@
-package storageMemory
+package storagememory
 
 import (
 	sync "sync"

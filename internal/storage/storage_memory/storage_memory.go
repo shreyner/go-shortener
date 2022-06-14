@@ -1,4 +1,4 @@
-package storageMemory
+package storagememory
 
 type MemoryStorage struct {
 	ShortURLRepository *shortURLRepository
