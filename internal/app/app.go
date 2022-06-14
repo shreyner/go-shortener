@@ -1,7 +1,6 @@
 package app
 
 import (
-	storageMemory "github.com/shreyner/go-shortener/internal/storage/storage_memory"
 	"log"
 
 	"github.com/caarlos0/env/v6"
@@ -9,7 +8,8 @@ import (
 	"github.com/shreyner/go-shortener/internal/handlers"
 	"github.com/shreyner/go-shortener/internal/server"
 	"github.com/shreyner/go-shortener/internal/service"
-	storageFile "github.com/shreyner/go-shortener/internal/storage/storage_file"
+	"github.com/shreyner/go-shortener/internal/storage/storage_file"
+	"github.com/shreyner/go-shortener/internal/storage/storage_memory"
 )
 
 type Config struct {
@@ -27,7 +27,7 @@ func NewApp() {
 
 	// TODO: Need refactoring
 	if cfg.FileStoragePath != "" {
-		storage, err := storageFile.NewFileStorage(cfg.FileStoragePath)
+		storage, err := storagefile.NewFileStorage(cfg.FileStoragePath)
 
 		if err != nil {
 			log.Fatal(err)
@@ -44,7 +44,7 @@ func NewApp() {
 		serv.Start()
 
 	} else {
-		storage := storageMemory.NewMemoryStorage()
+		storage := storagememory.NewMemoryStorage()
 
 		services := service.NewService(storage.ShortURLRepository)
 

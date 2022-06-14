@@ -1,4 +1,4 @@
-package storageFile
+package storagefile
 
 type FileStorage struct {
 	ShortURLRepository *shortURLRepository
