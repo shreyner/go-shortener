@@ -4,35 +4,31 @@ import (
 	"math/rand"
 
 	"github.com/shreyner/go-shortener/internal/core"
+	"github.com/shreyner/go-shortener/internal/repositories"
 )
 
-type ShortURLRepository interface {
-	Add(shortedURL core.ShortURL) error
-	GetByID(id string) (core.ShortURL, bool)
-}
-
 type Shorter struct {
-	shorterRepository ShortURLRepository
+	shorterRepository repositories.ShortURLRepository
 }
 
-func NewShorter(shorterRepository ShortURLRepository) *Shorter {
+func NewShorter(shorterRepository repositories.ShortURLRepository) *Shorter {
 	return &Shorter{shorterRepository: shorterRepository}
 }
 
-func (s *Shorter) Create(url string) (core.ShortURL, error) {
+func (s *Shorter) Create(url string) (*core.ShortURL, error) {
 	id := generateURLID()
 	shortURL := core.ShortURL{ID: id, URL: url}
 
-	err := s.shorterRepository.Add(shortURL)
+	err := s.shorterRepository.Add(&shortURL)
 
 	if err != nil {
-		return core.ShortURL{}, err
+		return &core.ShortURL{}, err
 	}
 
-	return shortURL, nil
+	return &shortURL, nil
 }
 
-func (s *Shorter) GetByID(id string) (core.ShortURL, bool) {
+func (s *Shorter) GetByID(id string) (*core.ShortURL, bool) {
 	return s.shorterRepository.GetByID(id)
 }
 
