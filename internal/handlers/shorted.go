@@ -19,8 +19,8 @@ var (
 )
 
 type ShortedService interface {
-	Create(url string) (core.ShortURL, error)
-	GetByID(key string) (core.ShortURL, bool)
+	Create(url string) (*core.ShortURL, error)
+	GetByID(key string) (*core.ShortURL, bool)
 }
 
 type ShortedHandler struct {

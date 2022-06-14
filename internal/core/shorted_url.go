@@ -1,6 +1,6 @@
 package core
 
 type ShortURL struct {
-	ID  string
-	URL string
+	ID  string `json:"id"`
+	URL string `json:"url"`
 }
