@@ -28,6 +28,7 @@ func NewApp() {
 		log.Fatal(err)
 	}
 
+	// TODO: Валидация флагов
 	serverAddress := flag.String("a", cfg.ServerAddress, "Адрес сервера")
 	baseURL := flag.String("b", cfg.BaseURL, "Базовый адрес")
 	fileStoragePath := flag.String("f", cfg.FileStoragePath, "Путь до папки с хранением данных")
