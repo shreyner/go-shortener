@@ -1,6 +1,7 @@
 package app
 
 import (
+	"flag"
 	"log"
 
 	"github.com/caarlos0/env/v6"
@@ -18,6 +19,8 @@ type Config struct {
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 }
 
+// TODO: Нужно больше логов
+
 func NewApp() {
 	var cfg Config
 
@@ -25,9 +28,15 @@ func NewApp() {
 		log.Fatal(err)
 	}
 
+	serverAddress := flag.String("a", cfg.ServerAddress, "Адрес сервера")
+	baseURL := flag.String("b", cfg.BaseURL, "Базовый адрес")
+	fileStoragePath := flag.String("f", cfg.FileStoragePath, "Путь до папки с хранением данных")
+
+	flag.Parse()
+
 	// TODO: Need refactoring
 	if cfg.FileStoragePath != "" {
-		storage, err := storagefile.NewFileStorage(cfg.FileStoragePath)
+		storage, err := storagefile.NewFileStorage(*fileStoragePath)
 
 		if err != nil {
 			log.Fatal(err)
@@ -38,8 +47,8 @@ func NewApp() {
 
 		services := service.NewService(storage.ShortURLRepository)
 
-		router := handlers.NewRouter(cfg.BaseURL, services.ShorterService)
-		serv := server.NewServer(cfg.ServerAddress, router)
+		router := handlers.NewRouter(*baseURL, services.ShorterService)
+		serv := server.NewServer(*serverAddress, router)
 
 		serv.Start()
 
@@ -48,8 +57,8 @@ func NewApp() {
 
 		services := service.NewService(storage.ShortURLRepository)
 
-		router := handlers.NewRouter(cfg.BaseURL, services.ShorterService)
-		serv := server.NewServer(cfg.ServerAddress, router)
+		router := handlers.NewRouter(*baseURL, services.ShorterService)
+		serv := server.NewServer(*serverAddress, router)
 
 		serv.Start()
 	}
