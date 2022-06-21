@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"bytes"
+	"compress/flate"
 	"encoding/json"
 	"fmt"
 	"io"
 	"mime"
 	"net/http"
 	"net/url"
+	"strings"
 
 	core "github.com/shreyner/go-shortener/internal/core"
 	"github.com/timewasted/go-accept-headers"
@@ -119,13 +122,23 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	body, err := io.ReadAll(r.Body)
-	defer r.Body.Close()
+	var body []byte
 
-	if err != nil {
-		http.Error(wr, err.Error(), http.StatusInternalServerError)
-		return
+	if strings.Contains(r.Header.Get("Content-Type"), "gzip") {
+		if body, err = Decompress(r.Body); err != nil {
+			http.Error(wr, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
+	} else {
+		body, err = io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(wr, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
 	}
+	defer r.Body.Close()
 
 	var shortedCreateDTO ShortedCreateDTO
 
@@ -134,7 +147,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := url.ParseRequestURI(string(shortedCreateDTO.URL)); err != nil {
+	if _, err := url.ParseRequestURI(shortedCreateDTO.URL); err != nil {
 		http.Error(wr, "Invalid url", http.StatusBadRequest)
 		return
 	}
@@ -146,9 +159,9 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resulturl := fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)
+	resultURL := fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)
 
-	responseCreateDTO := ShortedResponseDTO{Result: resulturl}
+	responseCreateDTO := ShortedResponseDTO{Result: resultURL}
 
 	responseBody, err := json.Marshal(responseCreateDTO)
 
@@ -157,7 +170,21 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	wr.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	wr.WriteHeader(http.StatusCreated)
-	wr.Header().Add("Content-type", "text/plain; charset=utf-8")
-	fmt.Fprint(wr, string(responseBody))
+
+	wr.Write(responseBody)
+}
+
+func Decompress(dateRead io.Reader) ([]byte, error) {
+	r := flate.NewReader(dateRead)
+	defer r.Close()
+
+	var b bytes.Buffer
+
+	if _, err := b.ReadFrom(r); err != nil {
+		return nil, fmt.Errorf("failed decopress data :%w", err)
+	}
+
+	return b.Bytes(), nil
 }
