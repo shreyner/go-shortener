@@ -2,22 +2,25 @@ package handlers
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	middleware "github.com/shreyner/go-shortener/internal/middlewares"
 )
 
 func NewRouter(baseURL string, shorterService ShortedService) *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	r.Use(chiMiddleware.RequestID)
+	r.Use(chiMiddleware.RealIP)
+	r.Use(chiMiddleware.Logger)
+	r.Use(chiMiddleware.Recoverer)
 
 	// handlers
 	shortedHandler := NewShortedHandler(baseURL, shorterService)
 
 	r.Route("/api", func(r chi.Router) {
-		r.Post("/shorten", shortedHandler.APICreate)
+		r.
+			With(chiMiddleware.AllowContentEncoding("gzip"), middleware.GzipCompressHandler).
+			Post("/shorten", shortedHandler.APICreate)
 	})
 	r.Post("/", shortedHandler.Create)
 	r.Get("/{id}", shortedHandler.Get)
