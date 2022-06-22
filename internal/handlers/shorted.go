@@ -54,27 +54,12 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	var body []byte
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		switch mediaType {
-		case "application/x-gzip":
-			if body, err = DecompressZlib(r.Body); err != nil {
-				log.Printf("error: %s", err.Error())
-				http.Error(wr, err.Error(), http.StatusInternalServerError)
+		if body, err = DecompressZlib(r.Body); err != nil {
+			log.Printf("error: %s", err.Error())
+			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
-				return
-			}
-			break
-		case "text/plain":
-			if body, err = Decompress(r.Body); err != nil {
-				log.Printf("error: %s", err.Error())
-				http.Error(wr, err.Error(), http.StatusInternalServerError)
-
-				return
-			}
-		default:
-			http.Error(wr, "unsupported content-type", http.StatusBadRequest)
 			return
 		}
-
 	} else {
 		body, err = io.ReadAll(r.Body)
 		if err != nil {
@@ -159,7 +144,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	var body []byte
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		if body, err = Decompress(r.Body); err != nil {
+		if body, err = DecompressZlib(r.Body); err != nil {
 			log.Printf("error: %s", err.Error())
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
