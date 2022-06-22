@@ -14,19 +14,21 @@ import (
 )
 
 type Config struct {
-	ServerAddress   string `env:"SERVER_ADDRESS"`
-	BaseURL         string `env:"BASE_URL"`
+	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
+	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 }
 
 // TODO: Нужно больше логов
 
 func NewApp() {
+	log.Println("Start app...")
 	var cfg Config
 
 	if err := env.Parse(&cfg); err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Finished parse env")
 
 	// TODO: Валидация флагов
 	serverAddress := flag.String("a", cfg.ServerAddress, "Адрес сервера")
@@ -34,6 +36,14 @@ func NewApp() {
 	fileStoragePath := flag.String("f", cfg.FileStoragePath, "Путь до папки с хранением данных")
 
 	flag.Parse()
+	log.Println("Finished flags env")
+
+	log.Printf(
+		"Start with params: serverAddress: %s, baseURL: %s, fileStoragePath: %s\n",
+		*serverAddress,
+		*baseURL,
+		*fileStoragePath,
+	)
 
 	// TODO: Need refactoring
 	if cfg.FileStoragePath != "" {
@@ -51,6 +61,7 @@ func NewApp() {
 		router := handlers.NewRouter(*baseURL, services.ShorterService)
 		serv := server.NewServer(*serverAddress, router)
 
+		log.Println("Listen server")
 		serv.Start()
 
 	} else {
@@ -61,6 +72,7 @@ func NewApp() {
 		router := handlers.NewRouter(*baseURL, services.ShorterService)
 		serv := server.NewServer(*serverAddress, router)
 
+		log.Println("Listen server")
 		serv.Start()
 	}
 }
