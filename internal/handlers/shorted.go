@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"compress/flate"
 	"compress/zlib"
 	"encoding/json"
 	"fmt"
@@ -53,12 +54,13 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	var body []byte
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		if body, err = DecompressZlib(r.Body); err != nil {
+		if body, err = Decompress(r.Body); err != nil {
 			log.Printf("error: %s", err.Error())
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
 		}
+
 	} else {
 		body, err = io.ReadAll(r.Body)
 		if err != nil {
@@ -143,7 +145,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	var body []byte
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		if body, err = DecompressZlib(r.Body); err != nil {
+		if body, err = Decompress(r.Body); err != nil {
 			log.Printf("error: %s", err.Error())
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
@@ -194,6 +196,19 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	wr.WriteHeader(http.StatusCreated)
 
 	wr.Write(responseBody)
+}
+
+func Decompress(dateRead io.Reader) ([]byte, error) {
+	r := flate.NewReader(dateRead)
+	defer r.Close()
+
+	var b bytes.Buffer
+
+	if _, err := b.ReadFrom(r); err != nil {
+		return nil, fmt.Errorf("failed decopress data :%w", err)
+	}
+
+	return b.Bytes(), nil
 }
 
 func DecompressZlib(dateRead io.Reader) ([]byte, error) {
