@@ -1,8 +1,9 @@
 package middlewares
 
 import (
-	"compress/zlib"
+	"compress/gzip"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -17,25 +18,26 @@ func (w gzlibWriter) Write(b []byte) (int, error) {
 }
 
 func GzlibCompressHandler(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(rw, r)
 
 			return
 		}
 
-		zw, err := zlib.NewWriterLevel(w, zlib.BestSpeed)
+		zw, err := gzip.NewWriterLevel(rw, gzip.BestSpeed)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println("error compress response", err.Error())
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
 
 			return
 		}
 
 		defer zw.Close()
 
-		w.Header().Add("Content-Encoding", "gzip")
+		rw.Header().Add("Content-Encoding", "gzip")
 
-		next.ServeHTTP(gzlibWriter{w, zw}, r)
+		next.ServeHTTP(gzlibWriter{rw, zw}, r)
 	})
 }
