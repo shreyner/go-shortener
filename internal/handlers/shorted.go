@@ -142,7 +142,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 
 	var body []byte
 
-	if strings.Contains(r.Header.Get("Content-Type"), "gzip") {
+	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		if body, err = Decompress(r.Body); err != nil {
 			log.Printf("error: %s", err.Error())
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
