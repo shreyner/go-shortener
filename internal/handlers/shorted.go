@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"compress/flate"
 	"compress/zlib"
 	"encoding/json"
 	"fmt"
@@ -195,19 +194,6 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	wr.WriteHeader(http.StatusCreated)
 
 	wr.Write(responseBody)
-}
-
-func Decompress(dateRead io.Reader) ([]byte, error) {
-	r := flate.NewReader(dateRead)
-	defer r.Close()
-
-	var b bytes.Buffer
-
-	if _, err := b.ReadFrom(r); err != nil {
-		return nil, fmt.Errorf("failed decopress data :%w", err)
-	}
-
-	return b.Bytes(), nil
 }
 
 func DecompressZlib(dateRead io.Reader) ([]byte, error) {
