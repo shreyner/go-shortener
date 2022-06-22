@@ -170,7 +170,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	wr.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	wr.Header().Add("Content-Type", "application/json")
 	wr.WriteHeader(http.StatusCreated)
 
 	wr.Write(responseBody)
