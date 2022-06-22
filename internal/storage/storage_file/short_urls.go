@@ -2,15 +2,12 @@ package storagefile
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"sync"
 
 	"github.com/shreyner/go-shortener/internal/core"
 )
-
-var FileName = "shorted_url.json"
 
 type shortURLRepository struct {
 	pathToFile string
@@ -22,15 +19,14 @@ type shortURLRepository struct {
 }
 
 func NewShortURLStore(fileStoragePath string) (*shortURLRepository, error) {
-	pathToFile := fmt.Sprintf("%s/%s", fileStoragePath, FileName)
-	file, err := os.OpenFile(pathToFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	file, err := os.OpenFile(fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &shortURLRepository{
-		pathToFile: pathToFile,
+		pathToFile: fileStoragePath,
 		mutex:      &sync.RWMutex{},
 		file:       file,
 		decoder:    json.NewDecoder(file),
