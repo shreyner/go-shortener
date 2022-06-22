@@ -12,10 +12,10 @@ import (
 	"net/url"
 	"strings"
 
-	core "github.com/shreyner/go-shortener/internal/core"
+	"github.com/go-chi/chi/v5"
 	"github.com/timewasted/go-accept-headers"
 
-	"github.com/go-chi/chi/v5"
+	core "github.com/shreyner/go-shortener/internal/core"
 )
 
 var (
@@ -52,7 +52,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 
 	var body []byte
 
-	if strings.Contains(r.Header.Get("Content-Type"), "gzip") {
+	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		if body, err = Decompress(r.Body); err != nil {
 			log.Printf("error: %s", err.Error())
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
@@ -86,7 +86,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	}
 
 	wr.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(wr, "%s/%s", sh.baseURL, shortURL.ID)
+	wr.Write([]byte(fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)))
 }
 
 func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
