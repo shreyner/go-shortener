@@ -46,7 +46,7 @@ func NewApp() {
 	)
 
 	// TODO: Need refactoring
-	if cfg.FileStoragePath != "" {
+	if *fileStoragePath != "" {
 		storage, err := storagefile.NewFileStorage(*fileStoragePath)
 
 		if err != nil {
