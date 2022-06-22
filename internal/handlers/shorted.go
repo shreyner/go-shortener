@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"compress/flate"
+	"compress/zlib"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -53,12 +54,27 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	var body []byte
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		if body, err = Decompress(r.Body); err != nil {
-			log.Printf("error: %s", err.Error())
-			http.Error(wr, err.Error(), http.StatusInternalServerError)
+		switch mediaType {
+		case "application/x-gzip":
+			if body, err = DecompressZlib(r.Body); err != nil {
+				log.Printf("error: %s", err.Error())
+				http.Error(wr, err.Error(), http.StatusInternalServerError)
 
+				return
+			}
+			break
+		case "text/plain":
+			if body, err = Decompress(r.Body); err != nil {
+				log.Printf("error: %s", err.Error())
+				http.Error(wr, err.Error(), http.StatusInternalServerError)
+
+				return
+			}
+		default:
+			http.Error(wr, "unsupported content-type", http.StatusBadRequest)
 			return
 		}
+
 	} else {
 		body, err = io.ReadAll(r.Body)
 		if err != nil {
@@ -203,6 +219,23 @@ func Decompress(dateRead io.Reader) ([]byte, error) {
 	var b bytes.Buffer
 
 	if _, err := b.ReadFrom(r); err != nil {
+		return nil, fmt.Errorf("failed decopress data :%w", err)
+	}
+
+	return b.Bytes(), nil
+}
+
+func DecompressZlib(dateRead io.Reader) ([]byte, error) {
+	zr, err := zlib.NewReader(dateRead)
+	if err != nil {
+		return nil, err
+	}
+
+	defer zr.Close()
+
+	var b bytes.Buffer
+
+	if _, err := b.ReadFrom(zr); err != nil {
 		return nil, fmt.Errorf("failed decopress data :%w", err)
 	}
 
