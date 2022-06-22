@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"mime"
 	"net/http"
 	"net/url"
@@ -39,31 +40,47 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
 	if err != nil {
+		log.Printf("error: %s", err.Error())
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if mediaType != "text/plain" {
+	if mediaType != "text/plain" && mediaType != "application/x-gzip" {
 		http.Error(wr, "bad request", http.StatusBadRequest)
 		return
 	}
 
-	body, err := io.ReadAll(r.Body)
+	var body []byte
 
-	if err != nil {
-		http.Error(wr, err.Error(), http.StatusInternalServerError)
-		return
+	if strings.Contains(r.Header.Get("Content-Type"), "gzip") {
+		if body, err = Decompress(r.Body); err != nil {
+			log.Printf("error: %s", err.Error())
+			http.Error(wr, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
+	} else {
+		body, err = io.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("error: %s", err.Error())
+			http.Error(wr, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
 	}
+	defer r.Body.Close()
 
 	_, err = url.ParseRequestURI(string(body))
 
 	if err != nil {
+		log.Printf("error: %s", err.Error())
 		http.Error(wr, "Invalid url", http.StatusBadRequest)
 		return
 	}
 
 	shortURL, err := sh.ShorterService.Create(string(body))
 	if err != nil {
+		log.Printf("error: %s", err.Error())
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -97,6 +114,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
 	if err != nil {
+		log.Printf("error: %s", err.Error())
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -126,6 +144,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 
 	if strings.Contains(r.Header.Get("Content-Type"), "gzip") {
 		if body, err = Decompress(r.Body); err != nil {
+			log.Printf("error: %s", err.Error())
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
@@ -133,6 +152,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	} else {
 		body, err = io.ReadAll(r.Body)
 		if err != nil {
+			log.Printf("error: %s", err.Error())
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return

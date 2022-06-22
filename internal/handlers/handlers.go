@@ -22,7 +22,7 @@ func NewRouter(baseURL string, shorterService ShortedService) *chi.Mux {
 			With(chiMiddleware.AllowContentEncoding("gzip"), middleware.GzipCompressHandler).
 			Post("/shorten", shortedHandler.APICreate)
 	})
-	r.Post("/", shortedHandler.Create)
+	r.With(chiMiddleware.AllowContentEncoding("gzip"), middleware.GzipCompressHandler).Post("/", shortedHandler.Create)
 	r.Get("/{id}", shortedHandler.Get)
 
 	return r
