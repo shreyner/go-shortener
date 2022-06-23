@@ -7,6 +7,7 @@ import (
 	"github.com/caarlos0/env/v6"
 
 	"github.com/shreyner/go-shortener/internal/handlers"
+	"github.com/shreyner/go-shortener/internal/repositories"
 	"github.com/shreyner/go-shortener/internal/server"
 	"github.com/shreyner/go-shortener/internal/service"
 	"github.com/shreyner/go-shortener/internal/storage/storage_file"
@@ -45,34 +46,26 @@ func NewApp() {
 		*fileStoragePath,
 	)
 
-	// TODO: Need refactoring
+	var shorterRepository repositories.ShortURLRepository
+
 	if *fileStoragePath != "" {
-		storage, err := storagefile.NewFileStorage(*fileStoragePath)
+		shorterRepository, err := storagefile.NewShortURLStore(*fileStoragePath)
 
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		defer storage.Close()
-
-		services := service.NewService(storage.ShortURLRepository)
-
-		router := handlers.NewRouter(*baseURL, services.ShorterService)
-		serv := server.NewServer(*serverAddress, router)
-
-		log.Println("Listen server")
-		serv.Start()
-
+		defer shorterRepository.Close()
 	} else {
-		storage := storagememory.NewMemoryStorage()
-
-		services := service.NewService(storage.ShortURLRepository)
-
-		router := handlers.NewRouter(*baseURL, services.ShorterService)
-		serv := server.NewServer(*serverAddress, router)
-
-		log.Println("Listen server")
-		serv.Start()
+		shorterRepository = storagememory.NewShortURLStore()
 	}
+
+	services := service.NewService(shorterRepository)
+
+	router := handlers.NewRouter(*baseURL, services.ShorterService)
+	serv := server.NewServer(*serverAddress, router)
+
+	log.Println("Listen server")
+	serv.Start()
 }
