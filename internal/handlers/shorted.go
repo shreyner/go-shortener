@@ -2,8 +2,7 @@ package handlers
 
 import (
 	"bytes"
-	"compress/flate"
-	"compress/zlib"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -199,29 +198,17 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 }
 
 func Decompress(dateRead io.Reader) ([]byte, error) {
-	r := flate.NewReader(dateRead)
-	defer r.Close()
+	gr, err := gzip.NewReader(dateRead)
 
-	var b bytes.Buffer
-
-	if _, err := b.ReadFrom(r); err != nil {
-		return nil, fmt.Errorf("failed decopress data :%w", err)
-	}
-
-	return b.Bytes(), nil
-}
-
-func DecompressZlib(dateRead io.Reader) ([]byte, error) {
-	zr, err := zlib.NewReader(dateRead)
 	if err != nil {
 		return nil, err
 	}
 
-	defer zr.Close()
+	defer gr.Close()
 
 	var b bytes.Buffer
 
-	if _, err := b.ReadFrom(zr); err != nil {
+	if _, err := b.ReadFrom(gr); err != nil {
 		return nil, fmt.Errorf("failed decopress data :%w", err)
 	}
 
