@@ -49,14 +49,16 @@ func NewApp() {
 	var shorterRepository repositories.ShortURLRepository
 
 	if *fileStoragePath != "" {
-		shorterRepository, err := storagefile.NewShortURLStore(*fileStoragePath)
+		shorterFileRepository, err := storagefile.NewShortURLStore(*fileStoragePath)
 
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		defer shorterRepository.Close()
+		defer shorterFileRepository.Close()
+
+		shorterRepository = shorterFileRepository
 	} else {
 		shorterRepository = storagememory.NewShortURLStore()
 	}

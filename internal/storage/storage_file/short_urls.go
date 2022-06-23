@@ -18,8 +18,11 @@ type shortURLRepository struct {
 	mutex *sync.RWMutex
 }
 
-func NewShortURLStore(fileStoragePath string) (*shortURLRepository, error) {
-	file, err := os.OpenFile(fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+func NewShortURLStore(fileStoragePath string) (
+	*shortURLRepository,
+	error,
+) {
+	var file, err = os.OpenFile(fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 
 	if err != nil {
 		return nil, err
@@ -44,7 +47,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	file, err := os.OpenFile(s.pathToFile, os.O_RDONLY|os.O_CREATE, 0644)
+	var file, err = os.OpenFile(s.pathToFile, os.O_RDONLY|os.O_CREATE, 0644)
 
 	if err != nil {
 		log.Printf("Error open file for read: %s", err)
