@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"compress/zlib"
+	"github.com/shreyner/go-shortener/internal/middlewares"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
@@ -20,10 +20,10 @@ func NewRouter(baseURL string, shorterService ShortedService) *chi.Mux {
 
 	r.Route("/api", func(r chi.Router) {
 		r.
-			With(chiMiddleware.AllowContentEncoding("gzip"), chiMiddleware.Compress(zlib.BestSpeed)).
+			With(chiMiddleware.AllowContentEncoding("gzip"), middlewares.GzlibCompressHandler).
 			Post("/shorten", shortedHandler.APICreate)
 	})
-	r.With(chiMiddleware.AllowContentEncoding("gzip"), chiMiddleware.Compress(zlib.BestSpeed)).
+	r.With(chiMiddleware.AllowContentEncoding("gzip"), middlewares.GzlibCompressHandler).
 		Post("/", shortedHandler.Create)
 	r.Get("/{id}", shortedHandler.Get)
 
