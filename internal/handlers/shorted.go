@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"github.com/shreyner/go-shortener/internal/middlewares"
 	"io"
 	"log"
 	"mime"
@@ -23,8 +24,9 @@ var (
 )
 
 type ShortedService interface {
-	Create(url string) (*core.ShortURL, error)
+	Create(userID, url string) (*core.ShortURL, error)
 	GetByID(key string) (*core.ShortURL, bool)
+	AllByUser(id string) ([]*core.ShortURL, error)
 }
 
 type ShortedHandler struct {
@@ -79,7 +81,10 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL, err := sh.ShorterService.Create(string(body))
+	userID := middlewares.GetUserIDFromCtx(r.Context())
+
+	shortURL, err := sh.ShorterService.Create(userID, string(body))
+
 	if err != nil {
 		log.Printf("error: %s", err.Error())
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
@@ -173,7 +178,8 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL, err := sh.ShorterService.Create(shortedCreateDTO.URL)
+	userID := middlewares.GetUserIDFromCtx(r.Context())
+	shortURL, err := sh.ShorterService.Create(userID, shortedCreateDTO.URL)
 
 	if err != nil {
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
@@ -195,6 +201,43 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	wr.WriteHeader(http.StatusCreated)
 
 	wr.Write(responseBody)
+}
+
+type AllShortedUser struct {
+	ShortUrl    string `json:"short_url"`
+	OriginalUrl string `json:"original_url"`
+}
+
+func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
+	userID := middlewares.GetUserIDFromCtx(r.Context())
+
+	content, err := sh.ShorterService.AllByUser(userID)
+
+	if err != nil {
+		http.Error(wr, "error create response", http.StatusInternalServerError)
+		return
+	}
+
+	if len(content) == 0 {
+		wr.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	responseDTO := make([]AllShortedUser, len(content))
+
+	for i, shortURL := range content {
+		responseDTO[i] = AllShortedUser{ShortUrl: shortURL.URL, OriginalUrl: fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)}
+	}
+
+	newContent, err := json.Marshal(responseDTO)
+
+	if err != nil {
+		http.Error(wr, "error create response", http.StatusInternalServerError)
+		return
+	}
+
+	wr.Header().Add("Content-Type", "application/json")
+	wr.Write(newContent)
 }
 
 func Decompress(dateRead io.Reader) ([]byte, error) {
