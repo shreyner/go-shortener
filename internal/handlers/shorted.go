@@ -226,7 +226,7 @@ func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 	responseDTO := make([]AllShortedUser, len(content))
 
 	for i, shortURL := range content {
-		responseDTO[i] = AllShortedUser{ShortUrl: shortURL.URL, OriginalUrl: fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)}
+		responseDTO[i] = AllShortedUser{ShortUrl: fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID), OriginalUrl: shortURL.URL}
 	}
 
 	newContent, err := json.Marshal(responseDTO)

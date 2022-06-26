@@ -25,14 +25,19 @@ type MyMockService struct {
 	mock.Mock
 }
 
-func (m *MyMockService) Create(url string) (*core.ShortURL, error) {
-	args := m.Called(url)
+func (m *MyMockService) Create(id, url string) (*core.ShortURL, error) {
+	args := m.Called(id, url)
 	return args.Get(0).(*core.ShortURL), args.Error(1)
 }
 
 func (m *MyMockService) GetByID(key string) (*core.ShortURL, bool) {
 	args := m.Called(key)
 	return args.Get(0).(*core.ShortURL), args.Bool(1)
+}
+
+func (m *MyMockService) AllByUser(id string) ([]*core.ShortURL, error) {
+	args := m.Called(id)
+	return args.Get(0).([]*core.ShortURL), args.Error(1)
 }
 
 func testRequest(t *testing.T, ts *httptest.Server, method, path, contentType, accept, body string) (*http.Response, string) {
@@ -76,13 +81,16 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 		r := NewRouter("http://localhost:8080", mockService)
 		ts := httptest.NewServer(r)
 
-		mockService.On("Create", "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
+		mockService.On("Create", mock.Anything, "https://ya.ru/").Return(
+			&core.ShortURL{URL: "https://ya.ru/", ID: "ya"},
+			nil,
+		)
 
 		resp, respBody := testRequest(t, ts, http.MethodPost, "/", ContentType, "", "https://ya.ru/")
 		defer resp.Body.Close()
 
 		mockService.AssertExpectations(t)
-		mockService.AssertCalled(t, "Create", "https://ya.ru/")
+		mockService.AssertCalled(t, "Create", mock.AnythingOfType("string"), "https://ya.ru/")
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 		assert.Equal(t, "http://localhost:8080/ya", respBody)
 	})
@@ -185,13 +193,13 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		r := NewRouter("http://localhost:8080", mockService)
 		ts := httptest.NewServer(r)
 
-		mockService.On("Create", "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
+		mockService.On("Create", mock.Anything, "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
 
 		resp, respBody := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, acceptType, "{\"url\":\"https://ya.ru/\"}")
 		defer resp.Body.Close()
 
 		mockService.AssertExpectations(t)
-		mockService.AssertCalled(t, "Create", "https://ya.ru/")
+		mockService.AssertCalled(t, "Create", mock.AnythingOfType("string"), "https://ya.ru/")
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 		assert.Equal(t, "{\"result\":\"http://localhost:8080/ya\"}", respBody)
 	})
@@ -204,13 +212,13 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		r := NewRouter("http://localhost:8080", mockService)
 		ts := httptest.NewServer(r)
 
-		mockService.On("Create", "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
+		mockService.On("Create", mock.Anything, "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
 
 		resp, respBody := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, acceptType, "{\"url\":\"https://ya.ru/\"}")
 		defer resp.Body.Close()
 
 		mockService.AssertExpectations(t)
-		mockService.AssertCalled(t, "Create", "https://ya.ru/")
+		mockService.AssertCalled(t, "Create", mock.AnythingOfType("string"), "https://ya.ru/")
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 		assert.Equal(t, resp.Header.Get("Content-Type"), "application/json")
 		assert.Equal(t, "{\"result\":\"http://localhost:8080/ya\"}", respBody)
@@ -224,7 +232,7 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		r := NewRouter("http://localhost:8080", mockService)
 		ts := httptest.NewServer(r)
 
-		mockService.On("Create", "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
+		mockService.On("Create", mock.Anything, "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, acceptType, "{\"url\":\"ya\"}")
 		defer resp.Body.Close()
