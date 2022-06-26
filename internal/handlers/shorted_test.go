@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -56,6 +57,11 @@ func testRequest(t *testing.T, ts *httptest.Server, method, path, contentType, a
 	require.NoError(t, err)
 
 	respBody, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		log.Println("Some Error", err)
+	}
+
 	require.NoError(t, err)
 
 	defer resp.Body.Close()
