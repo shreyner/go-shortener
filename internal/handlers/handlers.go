@@ -1,15 +1,21 @@
 package handlers
 
 import (
-	"github.com/shreyner/go-shortener/internal/middlewares"
+	"context"
+	"log"
+	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+
+	"github.com/shreyner/go-shortener/internal/middlewares"
+	storagedatabase "github.com/shreyner/go-shortener/internal/storage/storage_database"
 )
 
 var cookieSecretKey = []byte("triy6n9rw3")
 
-func NewRouter(baseURL string, shorterService ShortedService) *chi.Mux {
+func NewRouter(baseURL string, shorterService ShortedService, storageDB storagedatabase.StorageSQL) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(chiMiddleware.RequestID)
@@ -42,6 +48,19 @@ func NewRouter(baseURL string, shorterService ShortedService) *chi.Mux {
 		Post("/", shortedHandler.Create)
 
 	r.Get("/{id}", shortedHandler.Get)
+
+	r.Get("/ping", func(rw http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		if err := storageDB.PingContext(ctx); err != nil {
+			log.Println(err)
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		rw.WriteHeader(http.StatusOK)
+	})
 
 	return r
 }

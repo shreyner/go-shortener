@@ -2,6 +2,7 @@ package app
 
 import (
 	"flag"
+	"github.com/shreyner/go-shortener/internal/storage/storage_database"
 	"log"
 
 	"github.com/caarlos0/env/v6"
@@ -18,6 +19,7 @@ type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	DataBaseDSN     string `env:"DATABASE_DSN"`
 }
 
 // TODO: Нужно больше логов
@@ -35,6 +37,7 @@ func NewApp() {
 	serverAddress := flag.String("a", cfg.ServerAddress, "Адрес сервера")
 	baseURL := flag.String("b", cfg.BaseURL, "Базовый адрес")
 	fileStoragePath := flag.String("f", cfg.FileStoragePath, "Путь до папки с хранением данных")
+	dataBaseDSN := flag.String("d", cfg.DataBaseDSN, "Конфиг подключения к db")
 
 	flag.Parse()
 	log.Println("Finished flags env")
@@ -63,9 +66,27 @@ func NewApp() {
 		shorterRepository = storagememory.NewShortURLStore()
 	}
 
+	var storageDB storagedatabase.StorageSQL
+
+	if *dataBaseDSN != "" {
+		log.Println("Connect to db ...")
+		newStorageDB, err := storagedatabase.NewStorageSQL(*dataBaseDSN)
+
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		defer newStorageDB.Close()
+
+		log.Println("Success connected db")
+
+		storageDB = newStorageDB
+	}
+
 	services := service.NewService(shorterRepository)
 
-	router := handlers.NewRouter(*baseURL, services.ShorterService)
+	router := handlers.NewRouter(*baseURL, services.ShorterService, storageDB)
 	serv := server.NewServer(*serverAddress, router)
 
 	log.Println("Listen server")
