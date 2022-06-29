@@ -49,6 +49,8 @@ func NewApp() {
 		*fileStoragePath,
 	)
 
+	// Попробовать спрятать в APP и спрятать за interface.
+	// newShortURL repositry
 	var shorterRepository repositories.ShortURLRepository
 
 	if *fileStoragePath != "" {
@@ -69,19 +71,28 @@ func NewApp() {
 	var storageDB storagedatabase.StorageSQL
 
 	if *dataBaseDSN != "" {
-		log.Println("Connect to db ...")
-		newStorageDB, err := storagedatabase.NewStorageSQL(*dataBaseDSN)
+		log.Println("Connect to database ...")
+		database, err := storagedatabase.NewStorageSQL(*dataBaseDSN)
 
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		defer newStorageDB.Close()
+		defer database.Close()
 
-		log.Println("Success connected db")
+		log.Println("Success connected database")
 
-		storageDB = newStorageDB
+		log.Println("Check and create database...")
+		if err := database.CheckAndCreateSchema(); err != nil {
+			log.Fatal(err)
+			return
+		}
+		log.Println("Finish check or created...")
+
+		storageDB = database
+		shortURLStorage, _ := storagedatabase.NewShortURLStore(database.DB)
+		shorterRepository = shortURLStorage
 	}
 
 	services := service.NewService(shorterRepository)
