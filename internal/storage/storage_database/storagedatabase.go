@@ -13,10 +13,13 @@ type StorageSQL interface {
 }
 
 type storageSQL struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
-func NewStorageSQL(dataBaseDSN string) (*storageSQL, error) {
+func NewStorageSQL(dataBaseDSN string) (
+	*storageSQL,
+	error,
+) {
 	db, err := sql.Open("pgx", dataBaseDSN)
 
 	if err != nil {
@@ -31,18 +34,18 @@ func NewStorageSQL(dataBaseDSN string) (*storageSQL, error) {
 	}
 
 	return &storageSQL{
-		db: db,
+		DB: db,
 	}, nil
 }
 
 func (s *storageSQL) PingContext(ctx context.Context) error {
-	err := s.db.PingContext(ctx)
+	err := s.DB.PingContext(ctx)
 
 	return err
 }
 
 func (s *storageSQL) Close() error {
-	err := s.db.Close()
+	err := s.DB.Close()
 
 	return err
 }
