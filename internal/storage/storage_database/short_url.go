@@ -8,12 +8,20 @@ import (
 )
 
 type shortURLRepository struct {
-	db *sql.DB
+	db         *sql.DB
+	insertStmt *sql.Stmt
 }
 
 func NewShortURLStore(db *sql.DB) (*shortURLRepository, error) {
+	insertStmt, err := db.Prepare("insert into short_url (id, url, user_id, correlation_id) values ($1, $2, $3, $4);")
+
+	if err != err {
+		return nil, err
+	}
+
 	return &shortURLRepository{
-		db: db,
+		db:         db,
+		insertStmt: insertStmt,
 	}, nil
 }
 
@@ -88,4 +96,25 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	}
 
 	return shortURLs, nil
+}
+
+func (s *shortURLRepository) CreateBatchWithContext(ctx context.Context, shortURLs *[]*core.ShortURL) error {
+	tx, err := s.db.Begin()
+
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	txStmt := tx.StmtContext(ctx, s.insertStmt)
+
+	defer txStmt.Close()
+
+	for _, v := range *shortURLs {
+		if _, err := txStmt.ExecContext(ctx, v.ID, v.URL, v.UserID, v.CorrelationID); err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }

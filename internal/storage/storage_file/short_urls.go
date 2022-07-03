@@ -1,6 +1,7 @@
 package storagefile
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -102,6 +103,12 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	}
 
 	return result, nil
+}
+
+func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs *[]*core.ShortURL) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	return s.encoder.Encode(shortURLs)
 }
 
 func (s *shortURLRepository) Close() error {
