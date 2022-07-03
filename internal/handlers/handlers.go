@@ -27,13 +27,16 @@ func NewRouter(baseURL string, shorterService ShortedService, storageDB storaged
 	shortedHandler := NewShortedHandler(baseURL, shorterService)
 
 	r.Route("/api", func(r chi.Router) {
-		r.
-			With(
-				chiMiddleware.AllowContentEncoding("gzip"),
-				middlewares.GzlibCompressHandler,
-				middlewares.AuthHandler(cookieSecretKey),
-			).
-			Post("/shorten", shortedHandler.APICreate)
+		r.With(middlewares.AuthHandler(cookieSecretKey)).Route("/shorten", func(r chi.Router) {
+			r.
+				With(
+					chiMiddleware.AllowContentEncoding("gzip"),
+					middlewares.GzlibCompressHandler,
+				).
+				Post("/", shortedHandler.APICreate)
+
+			r.Post("/batch", shortedHandler.APICreateBatch)
+		})
 
 		r.Route("/user", func(r chi.Router) {
 			r.With(middlewares.AuthHandler(cookieSecretKey)).Get("/urls", shortedHandler.APIUserURLs)

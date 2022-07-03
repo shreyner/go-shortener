@@ -12,10 +12,11 @@ func (s *storageSQL) CheckAndCreateSchema() error {
 	_, err := s.DB.ExecContext(ctx, `
 		create table if not exists short_url
 		(
-			id         varchar                   not null,
-			url        varchar                   not null,
-			user_id    varchar,
-			created_at date default current_date not null
+			id         		varchar                   not null,
+			url        		varchar                   not null,
+			user_id    		varchar,
+			created_at 		date default current_date not null,
+			correlation_id 	varchar
 		);
 		
 		create unique index if not exists short_url_id_uindex

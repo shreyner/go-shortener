@@ -1,6 +1,7 @@
 package storagememory
 
 import (
+	"context"
 	"sync"
 
 	"github.com/shreyner/go-shortener/internal/core"
@@ -47,4 +48,15 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	}
 
 	return result, nil
+}
+
+func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs *[]*core.ShortURL) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	for _, v := range *shortURLs {
+		s.store[v.ID] = v
+	}
+
+	return nil
 }
