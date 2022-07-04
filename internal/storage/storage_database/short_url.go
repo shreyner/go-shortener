@@ -29,15 +29,28 @@ func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := s.db.ExecContext(
+	result := s.db.QueryRowContext(
 		ctx,
-		`insert into short_url (id, url, user_id) values ($1, $2, $3);`,
+		`insert into short_url (id, url, user_id) values ($1, $2, $3) on conflict (url) do update set url=excluded.url returning id;`,
 		shortURL.ID,
 		shortURL.URL,
 		shortURL.UserID,
 	)
 
-	return err
+	if result.Err() != nil {
+		return result.Err()
+	}
+
+	var resultId string
+	if err := result.Scan(&resultId); err != nil {
+		return err
+	}
+
+	if resultId != shortURL.ID {
+		return NewShortURLCreateConflictError(resultId)
+	}
+
+	return nil
 }
 
 func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {

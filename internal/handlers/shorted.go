@@ -5,8 +5,8 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/shreyner/go-shortener/internal/middlewares"
 	"io"
 	"log"
 	"mime"
@@ -18,6 +18,8 @@ import (
 	"github.com/timewasted/go-accept-headers"
 
 	core "github.com/shreyner/go-shortener/internal/core"
+	"github.com/shreyner/go-shortener/internal/middlewares"
+	sdb "github.com/shreyner/go-shortener/internal/storage/storage_database"
 )
 
 var (
@@ -87,9 +89,19 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 
 	shortURL, err := sh.ShorterService.Create(userID, string(body))
 
+	var shortURLCreateConflictError *sdb.ShortURLCreateConflictError
+
+	if errors.As(err, &shortURLCreateConflictError) {
+		wr.WriteHeader(http.StatusConflict)
+		wr.Write([]byte(fmt.Sprintf("%s/%s", sh.baseURL, shortURLCreateConflictError.OriginID)))
+
+		return
+	}
+
 	if err != nil {
 		log.Printf("error: %s", err.Error())
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -182,6 +194,28 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 
 	userID := middlewares.GetUserIDFromCtx(r.Context())
 	shortURL, err := sh.ShorterService.Create(userID, shortedCreateDTO.URL)
+
+	// TODO: Отрефакторить и убрать дублирование кода
+	var shortURLCreateConflictError *sdb.ShortURLCreateConflictError
+	if errors.As(err, &shortURLCreateConflictError) {
+
+		resultURL := fmt.Sprintf("%s/%s", sh.baseURL, shortURLCreateConflictError.OriginID)
+
+		responseCreateDTO := ShortedResponseDTO{Result: resultURL}
+
+		responseBody, err := json.Marshal(responseCreateDTO)
+
+		if err != nil {
+			http.Error(wr, "error create response", http.StatusInternalServerError)
+			return
+		}
+
+		wr.Header().Add("Content-Type", "application/json")
+		wr.WriteHeader(http.StatusConflict)
+
+		wr.Write(responseBody)
+		return
+	}
 
 	if err != nil {
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
