@@ -21,6 +21,9 @@ func (s *storageSQL) CheckAndCreateSchema() error {
 		
 		create unique index if not exists short_url_id_uindex
 			on short_url (id);
+		
+		create unique index if not exists short_url_uindex
+		    on short_url (url);
 	`)
 
 	return err
