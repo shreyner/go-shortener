@@ -345,8 +345,8 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 }
 
 type AllShortedUser struct {
-	ShortUrl    string `json:"short_url"`
-	OriginalUrl string `json:"original_url"`
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
 }
 
 func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
@@ -367,7 +367,7 @@ func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 	responseDTO := make([]AllShortedUser, len(content))
 
 	for i, shortURL := range content {
-		responseDTO[i] = AllShortedUser{ShortUrl: fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID), OriginalUrl: shortURL.URL}
+		responseDTO[i] = AllShortedUser{ShortURL: fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID), OriginalURL: shortURL.URL}
 	}
 
 	newContent, err := json.Marshal(responseDTO)

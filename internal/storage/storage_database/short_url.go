@@ -41,13 +41,13 @@ func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 		return result.Err()
 	}
 
-	var resultId string
-	if err := result.Scan(&resultId); err != nil {
+	var resultID string
+	if err := result.Scan(&resultID); err != nil {
 		return err
 	}
 
-	if resultId != shortURL.ID {
-		return NewShortURLCreateConflictError(resultId)
+	if resultID != shortURL.ID {
+		return NewShortURLCreateConflictError(resultID)
 	}
 
 	return nil
