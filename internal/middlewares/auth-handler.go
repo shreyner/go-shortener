@@ -12,10 +12,13 @@ import (
 	"github.com/shreyner/go-shortener/internal/pkg/random"
 )
 
+type UserCtxKey int
+
+const userCtxKey UserCtxKey = iota
+
 var (
 	lengthUserID  = 5
 	authCookieKey = "auth"
-	userCtxKey    = "userID"
 )
 
 func GetUserIDFromCtx(ctx context.Context) string {
