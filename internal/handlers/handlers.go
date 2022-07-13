@@ -59,6 +59,7 @@ func NewRouter(baseURL string, shorterService ShortedService, storageDB storaged
 		if err := storageDB.PingContext(ctx); err != nil {
 			log.Println(err)
 			rw.WriteHeader(http.StatusInternalServerError)
+
 			return
 		}
 

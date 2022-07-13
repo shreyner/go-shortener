@@ -30,6 +30,8 @@ func NewApp() {
 
 	if err := env.Parse(&cfg); err != nil {
 		log.Fatal(err)
+
+		return
 	}
 	log.Println("Finished parse env")
 

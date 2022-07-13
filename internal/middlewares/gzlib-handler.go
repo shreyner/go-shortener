@@ -38,6 +38,8 @@ func GzlibCompressHandler(next http.Handler) http.Handler {
 
 		rw.Header().Add("Content-Encoding", "gzip")
 
+		// TODO: Вынести сюда логику с decompress, разбирать body и складывать stream buffer в body
+
 		next.ServeHTTP(gzlibWriter{rw, zw}, r)
 	})
 }
