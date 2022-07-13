@@ -34,11 +34,14 @@ func AuthHandler(key []byte) func(next http.Handler) http.Handler {
 
 	aesBlock, err := aes.NewCipher(keyHash)
 	if err != nil {
+		// TODO: Убрать Fatalln. Обычный error. Сделать выбрасывание http ошибки
 		log.Fatalln(err)
 	}
 
 	aesGCM, err := cipher.NewGCM(aesBlock)
 	if err != nil {
+		// TODO: Убрать Fatalln. Обычный error. Сделать выбрасывание http ошибки
+		// TODO: Пробежаться и посомтреть по коду
 		log.Fatalln(err)
 	}
 

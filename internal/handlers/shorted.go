@@ -197,8 +197,11 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 
 	// TODO: Отрефакторить и убрать дублирование кода
 	var shortURLCreateConflictError *sdb.ShortURLCreateConflictError
-	if errors.As(err, &shortURLCreateConflictError) {
 
+	// var httpStatus := http.StatusCreated
+	//var resultURL string;
+
+	if errors.As(err, &shortURLCreateConflictError) {
 		resultURL := fmt.Sprintf("%s/%s", sh.baseURL, shortURLCreateConflictError.OriginID)
 
 		responseCreateDTO := ShortedResponseDTO{Result: resultURL}
@@ -214,13 +217,19 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		wr.WriteHeader(http.StatusConflict)
 
 		wr.Write(responseBody)
+
 		return
 	}
 
 	if err != nil {
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
+
+	//else {
+	//	resultURL = fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)
+	//}
 
 	resultURL := fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)
 
