@@ -1,8 +1,7 @@
-package router
+package handlers
 
 import (
 	"context"
-	"github.com/shreyner/go-shortener/internal/storage"
 	"net/http"
 	"time"
 
@@ -10,8 +9,8 @@ import (
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 
-	"github.com/shreyner/go-shortener/internal/handlers"
 	"github.com/shreyner/go-shortener/internal/middlewares"
+	"github.com/shreyner/go-shortener/internal/storage"
 )
 
 var cookieSecretKey = []byte("triy6n9rw3")
@@ -19,7 +18,7 @@ var cookieSecretKey = []byte("triy6n9rw3")
 func NewRouter(
 	log *zap.Logger,
 	baseURL string,
-	shorterService handlers.ShortedService,
+	shorterService ShortedService,
 
 	storage *storage.Storage,
 ) *chi.Mux {
@@ -30,7 +29,7 @@ func NewRouter(
 	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.Recoverer)
 
-	shortedHandler := handlers.NewShortedHandler(baseURL, shorterService)
+	shortedHandler := NewShortedHandler(baseURL, shorterService)
 
 	r.Route("/api", func(r chi.Router) {
 		r.With(middlewares.AuthHandler(cookieSecretKey)).Route("/shorten", func(r chi.Router) {

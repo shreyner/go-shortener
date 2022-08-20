@@ -72,7 +72,7 @@ func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*S
 		}
 		log.Info("Finish check or created...")
 
-		shortURLStorage, err := storagedatabase.NewShortURLStore(db)
+		shortURLStorage, err := storagedatabase.NewShortURLStore(log, db)
 		if err != nil {
 			return nil, fmt.Errorf("storage error when initilizing shortURLStorage: %w", err)
 		}
