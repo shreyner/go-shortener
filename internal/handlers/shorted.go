@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"io"
 	"log"
 	"mime"
@@ -17,7 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/timewasted/go-accept-headers"
 
-	core "github.com/shreyner/go-shortener/internal/core"
+	"github.com/shreyner/go-shortener/internal/core"
 	"github.com/shreyner/go-shortener/internal/middlewares"
 	sdb "github.com/shreyner/go-shortener/internal/storage/storage_database"
 )
@@ -34,6 +35,7 @@ type ShortedService interface {
 }
 
 type ShortedHandler struct {
+	log            *zap.Logger
 	ShorterService ShortedService
 	baseURL        string
 }

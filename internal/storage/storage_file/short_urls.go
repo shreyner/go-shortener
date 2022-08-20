@@ -108,6 +108,7 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs *[]*core.ShortURL) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+
 	return s.encoder.Encode(shortURLs)
 }
 
