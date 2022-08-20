@@ -3,16 +3,20 @@ package storagedatabase
 import (
 	"context"
 	"database/sql"
-	"github.com/shreyner/go-shortener/internal/core"
 	"time"
+
+	"go.uber.org/zap"
+
+	"github.com/shreyner/go-shortener/internal/core"
 )
 
 type shortURLRepository struct {
+	log        *zap.Logger
 	db         *sql.DB
 	insertStmt *sql.Stmt
 }
 
-func NewShortURLStore(db *sql.DB) (*shortURLRepository, error) {
+func NewShortURLStore(log *zap.Logger, db *sql.DB) (*shortURLRepository, error) {
 	insertStmt, err := db.Prepare("insert into short_url (id, url, user_id, correlation_id) values ($1, $2, $3, $4);")
 
 	if err != err {
@@ -20,6 +24,7 @@ func NewShortURLStore(db *sql.DB) (*shortURLRepository, error) {
 	}
 
 	return &shortURLRepository{
+		log:        log,
 		db:         db,
 		insertStmt: insertStmt,
 	}, nil
@@ -117,7 +122,12 @@ func (s *shortURLRepository) CreateBatchWithContext(ctx context.Context, shortUR
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func(tx *sql.Tx) {
+		err := tx.Rollback()
+		if err != nil {
+			s.log.Error("shortURL Rollback error", zap.Error(err))
+		}
+	}(tx)
 
 	txStmt := tx.StmtContext(ctx, s.insertStmt)
 

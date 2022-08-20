@@ -2,14 +2,16 @@ package app
 
 import (
 	"context"
-	"github.com/shreyner/go-shortener/internal/router"
-	"github.com/shreyner/go-shortener/internal/server"
-	"github.com/shreyner/go-shortener/internal/service"
-	"github.com/shreyner/go-shortener/internal/storage"
-	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"go.uber.org/zap"
+
+	"github.com/shreyner/go-shortener/internal/handlers"
+	"github.com/shreyner/go-shortener/internal/server"
+	"github.com/shreyner/go-shortener/internal/service"
+	"github.com/shreyner/go-shortener/internal/storage"
 )
 
 func NewApp(
@@ -34,7 +36,7 @@ func NewApp(
 
 	services := service.NewService(store.ShortURL)
 
-	r := router.NewRouter(log, baseURL, services.ShorterService, store)
+	r := handlers.NewRouter(log, baseURL, services.ShorterService, store)
 	serv := server.NewServer(log, serverAddress, r)
 
 	serv.Start()
