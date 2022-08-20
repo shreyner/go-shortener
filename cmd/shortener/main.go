@@ -2,9 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"go.uber.org/zap"
-	"os"
+	logStd "log"
 
 	"github.com/shreyner/go-shortener/internal/app"
 	"github.com/shreyner/go-shortener/internal/config"
@@ -15,15 +14,13 @@ func main() {
 	var cfg config.Config
 
 	if err := cfg.Parse(); err != nil {
-		fmt.Errorf("error initilizing logger: %w", err)
-		os.Exit(1)
+		logStd.Fatal("error initilizing logger: %w", err)
 	}
 
 	log, err := logger.InitLogger(&cfg)
 
 	if err != nil {
-		fmt.Errorf("error initilizing logger: %w", err)
-		os.Exit(1)
+		logStd.Fatal("error initilizing logger: %w", err)
 	}
 	defer log.Sync()
 

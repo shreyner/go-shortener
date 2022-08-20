@@ -62,12 +62,12 @@ func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*S
 			return nil, fmt.Errorf("storage error when initialize connection to db: %w", err)
 		}
 
-		storeDb := storagedatabase.NewStorageSQL(db)
+		storeDB := storagedatabase.NewStorageSQL(db)
 
 		log.Info("Success connected database")
 
 		log.Info("Check and create database...")
-		if err := storeDb.CheckAndCreateSchema(); err != nil {
+		if err := storeDB.CheckAndCreateSchema(); err != nil {
 			return nil, fmt.Errorf("storage error when create schema in db: %w", err)
 		}
 		log.Info("Finish check or created...")
@@ -80,10 +80,10 @@ func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*S
 		return &Storage{
 			ShortURL: shortURLStorage,
 
-			ping: storeDb.PingContext,
+			ping: storeDB.PingContext,
 			close: func() error {
 				log.Info("Close database connection")
-				if err := storeDb.Close(); err != nil {
+				if err := storeDB.Close(); err != nil {
 					log.Error("error to close connection db", zap.Error(err))
 
 					return err
