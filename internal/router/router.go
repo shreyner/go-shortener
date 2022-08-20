@@ -1,21 +1,28 @@
-package handlers
+package router
 
 import (
 	"context"
-	"log"
+	"github.com/shreyner/go-shortener/internal/storage"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"go.uber.org/zap"
 
+	"github.com/shreyner/go-shortener/internal/handlers"
 	"github.com/shreyner/go-shortener/internal/middlewares"
-	storagedatabase "github.com/shreyner/go-shortener/internal/storage/storage_database"
 )
 
 var cookieSecretKey = []byte("triy6n9rw3")
 
-func NewRouter(baseURL string, shorterService ShortedService, storageDB storagedatabase.StorageSQL) *chi.Mux {
+func NewRouter(
+	log *zap.Logger,
+	baseURL string,
+	shorterService handlers.ShortedService,
+
+	storage *storage.Storage,
+) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(chiMiddleware.RequestID)
@@ -23,8 +30,7 @@ func NewRouter(baseURL string, shorterService ShortedService, storageDB storaged
 	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.Recoverer)
 
-	// handlers
-	shortedHandler := NewShortedHandler(baseURL, shorterService)
+	shortedHandler := handlers.NewShortedHandler(baseURL, shorterService)
 
 	r.Route("/api", func(r chi.Router) {
 		r.With(middlewares.AuthHandler(cookieSecretKey)).Route("/shorten", func(r chi.Router) {
@@ -38,8 +44,10 @@ func NewRouter(baseURL string, shorterService ShortedService, storageDB storaged
 			r.Post("/batch", shortedHandler.APICreateBatch)
 		})
 
-		r.Route("/user", func(r chi.Router) {
-			r.With(middlewares.AuthHandler(cookieSecretKey)).Get("/urls", shortedHandler.APIUserURLs)
+		r.With(middlewares.AuthHandler(cookieSecretKey)).Route("/user", func(r chi.Router) {
+			r.Route("/urls", func(r chi.Router) {
+				r.Get("/", shortedHandler.APIUserURLs)
+			})
 		})
 	})
 
@@ -56,8 +64,8 @@ func NewRouter(baseURL string, shorterService ShortedService, storageDB storaged
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 
-		if err := storageDB.PingContext(ctx); err != nil {
-			log.Println(err)
+		if err := storage.PingContext(ctx); err != nil {
+			log.Error("can't ping to database", zap.Error(err))
 			rw.WriteHeader(http.StatusInternalServerError)
 
 			return
@@ -67,4 +75,5 @@ func NewRouter(baseURL string, shorterService ShortedService, storageDB storaged
 	})
 
 	return r
+
 }

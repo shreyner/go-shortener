@@ -16,7 +16,9 @@ type Shorter struct {
 }
 
 func NewShorter(shorterRepository repositories.ShortURLRepository) *Shorter {
-	return &Shorter{shorterRepository: shorterRepository}
+	return &Shorter{
+		shorterRepository: shorterRepository,
+	}
 }
 
 func (s *Shorter) Create(userID, url string) (*core.ShortURL, error) {
@@ -50,6 +52,10 @@ func (s *Shorter) GetByID(id string) (*core.ShortURL, bool) {
 
 func (s *Shorter) AllByUser(id string) ([]*core.ShortURL, error) {
 	return s.shorterRepository.AllByUserID(id)
+}
+
+func (s *Shorter) DeleteBatch(ctx context.Context) error {
+	return nil
 }
 
 func generateURLID() string {
