@@ -109,6 +109,5 @@ func (s *Storage) PingContext(ctx context.Context) error {
 }
 
 func (s *Storage) Close() error {
-	fmt.Print("Hello ")
 	return s.close()
 }

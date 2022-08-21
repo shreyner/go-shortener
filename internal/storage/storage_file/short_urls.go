@@ -115,3 +115,7 @@ func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs
 func (s *shortURLRepository) Close() error {
 	return s.file.Close()
 }
+
+func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) error {
+	return nil
+}
