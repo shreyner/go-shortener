@@ -471,7 +471,7 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 
 	sh.log.Info("was delete", zap.String("userID", userID), zap.Strings("urlIDs", urlIDs))
 
-	sh.workerpoolShorter.Push(&workerpool.JobDeleteURLs{UserID: userID, UrlIDs: urlIDs})
+	sh.workerpoolShorter.Push(&workerpool.JobDeleteURLs{UserID: userID, URLIDs: urlIDs})
 
 	//if err := sh.ShorterRepository.DeleteURLsUserByIds(userID, urlIDs); err != nil {
 	//	sh.log.Error("error when delete", zap.Error(err))

@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"github.com/shreyner/go-shortener/internal/pkg/workerpool"
+	"github.com/shreyner/go-shortener/internal/repositories"
 	"net/http"
 	"time"
 
@@ -20,6 +21,7 @@ func NewRouter(
 	log *zap.Logger,
 	baseURL string,
 	shorterService ShortedService,
+	shortURIRepository repositories.ShortURLRepository,
 	storage *storage.Storage,
 	workerpoolShorter *workerpool.WorkerPool,
 ) *chi.Mux {
@@ -30,7 +32,7 @@ func NewRouter(
 	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.Recoverer)
 
-	shortedHandler := NewShortedHandler(log, baseURL, shorterService, storage.ShortURL, workerpoolShorter)
+	shortedHandler := NewShortedHandler(log, baseURL, shorterService, shortURIRepository, workerpoolShorter)
 
 	r.Route("/api", func(r chi.Router) {
 		r.With(middlewares.AuthHandler(cookieSecretKey)).Route("/shorten", func(r chi.Router) {
