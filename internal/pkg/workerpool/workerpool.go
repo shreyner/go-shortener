@@ -1,10 +1,10 @@
 package workerpool
 
 import (
-	"github.com/gammazero/deque"
-	"go.uber.org/zap"
 	"runtime"
 	"sync"
+
+	"go.uber.org/zap"
 )
 
 type JobDeleteURLs struct {
@@ -13,7 +13,7 @@ type JobDeleteURLs struct {
 }
 
 type Queue struct {
-	q    deque.Deque[*JobDeleteURLs]
+	arr  []*JobDeleteURLs
 	mu   sync.Mutex
 	cond *sync.Cond
 }
@@ -29,7 +29,7 @@ func (q *Queue) Push(task *JobDeleteURLs) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	q.q.PushBack(task)
+	q.arr = append(q.arr, task)
 	q.cond.Signal()
 }
 
@@ -37,11 +37,13 @@ func (q *Queue) PopWait() *JobDeleteURLs {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	if q.q.Len() == 0 {
+	if len(q.arr) == 0 {
 		q.cond.Wait()
 	}
 
-	t := q.q.PopFront()
+	t := q.arr[0]
+
+	q.arr = q.arr[1:]
 
 	return t
 }
