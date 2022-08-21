@@ -38,10 +38,10 @@ func NewApp(
 	services := service.NewService(store.ShortURL)
 
 	wpSortURL := workerpool.NewWorkerPool(log, func(job *workerpool.JobDeleteURLs) error {
-		return store.ShortURL.DeleteURLsUserByIds(job.UserID, job.UrlIDs)
+		return store.ShortURL.DeleteURLsUserByIds(job.UserID, job.URLIDs)
 	})
 
-	r := handlers.NewRouter(log, baseURL, services.ShorterService, store, wpSortURL)
+	r := handlers.NewRouter(log, baseURL, services.ShorterService, store.ShortURL, store, wpSortURL)
 	serv := server.NewServer(log, serverAddress, r)
 
 	serv.Start()

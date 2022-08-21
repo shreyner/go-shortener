@@ -9,7 +9,7 @@ import (
 
 type JobDeleteURLs struct {
 	UserID string
-	UrlIDs []string
+	URLIDs []string
 }
 
 type Queue struct {
