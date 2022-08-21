@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	pg "github.com/lib/pq"
 	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/core"
@@ -66,7 +67,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 
 	row := s.db.QueryRowContext(
 		ctx,
-		`select id, url, user_id from short_url where id = $1`,
+		`select id, url, user_id, deleted from short_url where id = $1`,
 		id,
 	)
 
@@ -74,7 +75,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 		return nil, false
 	}
 
-	if err := row.Scan(&shortURL.ID, &shortURL.URL, &shortURL.UserID); err != nil {
+	if err := row.Scan(&shortURL.ID, &shortURL.URL, &shortURL.UserID, &shortURL.IsDeleted); err != nil {
 		return nil, false
 	}
 
@@ -140,4 +141,20 @@ func (s *shortURLRepository) CreateBatchWithContext(ctx context.Context, shortUR
 	}
 
 	return tx.Commit()
+}
+
+func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	s.log.Info("Was delted", zap.String("userID", userID), zap.Strings("ids", ids))
+
+	_, err := s.db.ExecContext(
+		ctx,
+		`update short_url set deleted = true where user_id = $1 and id = any ($2);`,
+		userID,
+		pg.Array(ids),
+	)
+
+	return err
 }

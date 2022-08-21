@@ -16,7 +16,8 @@ func (s *storageSQL) CheckAndCreateSchema() error {
 			url        		varchar                   not null,
 			user_id    		varchar,
 			created_at 		date default current_date not null,
-			correlation_id 	varchar
+			correlation_id 	varchar,
+			deleted 		boolean default false     not null
 		);
 		
 		create unique index if not exists short_url_id_uindex

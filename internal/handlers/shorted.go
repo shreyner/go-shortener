@@ -7,7 +7,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
+	"github.com/shreyner/go-shortener/internal/pkg/workerpool"
+	"github.com/shreyner/go-shortener/internal/repositories"
 	"io"
 	"log"
 	"mime"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/timewasted/go-accept-headers"
+	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/core"
 	"github.com/shreyner/go-shortener/internal/middlewares"
@@ -35,13 +37,27 @@ type ShortedService interface {
 }
 
 type ShortedHandler struct {
-	log            *zap.Logger
-	ShorterService ShortedService
-	baseURL        string
+	log               *zap.Logger
+	ShorterService    ShortedService
+	ShorterRepository repositories.ShortURLRepository
+	baseURL           string
+	workerpoolShorter *workerpool.WorkerPool
 }
 
-func NewShortedHandler(baseURL string, shorterService ShortedService) *ShortedHandler {
-	return &ShortedHandler{ShorterService: shorterService, baseURL: baseURL}
+func NewShortedHandler(
+	log *zap.Logger,
+	baseURL string,
+	shorterService ShortedService,
+	ShorterRepository repositories.ShortURLRepository,
+	workerpoolShorter *workerpool.WorkerPool,
+) *ShortedHandler {
+	return &ShortedHandler{
+		ShorterService:    shorterService,
+		ShorterRepository: ShorterRepository,
+		baseURL:           baseURL,
+		log:               log,
+		workerpoolShorter: workerpoolShorter,
+	}
 }
 
 func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
@@ -118,6 +134,11 @@ func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
 
 	if !ok {
 		http.Error(wr, "Not Found", http.StatusNotFound)
+		return
+	}
+
+	if shortURL.IsDeleted {
+		http.Error(wr, "Was deleted", http.StatusGone)
 		return
 	}
 
@@ -228,10 +249,6 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	//else {
-	//	resultURL = fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)
-	//}
 
 	resultURL := fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)
 
@@ -390,6 +407,77 @@ func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 
 	wr.Header().Add("Content-Type", "application/json")
 	wr.Write(newContent)
+}
+
+func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Request) {
+	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		http.Error(wr, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if mediaType != ContentTypeJSON {
+		http.Error(wr, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	acceptHeader := r.Header.Get("Accept")
+
+	if acceptHeader != "" {
+		crossAccepting, err := accept.Negotiate(acceptHeader, ContentTypeJSON)
+
+		if err != nil {
+			http.Error(wr, "bad headers", http.StatusBadRequest)
+			return
+		}
+
+		if crossAccepting != ContentTypeJSON {
+			http.Error(wr, "bad accepting content", http.StatusNotAcceptable)
+			return
+		}
+	}
+
+	var body []byte
+
+	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
+		if body, err = Decompress(r.Body); err != nil {
+			log.Printf("error: %s", err.Error())
+			http.Error(wr, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
+	} else {
+		body, err = io.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("error: %s", err.Error())
+			http.Error(wr, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
+	}
+
+	defer r.Body.Close()
+
+	var urlIDs []string
+
+	if err := json.Unmarshal(body, &urlIDs); err != nil {
+		http.Error(wr, "Error parse body", http.StatusInternalServerError)
+		return
+	}
+
+	userID := middlewares.GetUserIDFromCtx(r.Context())
+
+	sh.log.Info("was delete", zap.String("userID", userID), zap.Strings("urlIDs", urlIDs))
+
+	sh.workerpoolShorter.Push(&workerpool.JobDeleteURLs{UserID: userID, UrlIDs: urlIDs})
+
+	//if err := sh.ShorterRepository.DeleteURLsUserByIds(userID, urlIDs); err != nil {
+	//	sh.log.Error("error when delete", zap.Error(err))
+	//}
+
+	wr.WriteHeader(http.StatusAccepted)
 }
 
 func Decompress(dateRead io.Reader) ([]byte, error) {

@@ -2,9 +2,8 @@ package storagememory
 
 import (
 	"context"
-	"sync"
-
 	"github.com/shreyner/go-shortener/internal/core"
+	"sync"
 )
 
 type shortURLRepository struct {
@@ -58,5 +57,9 @@ func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs
 		s.store[v.ID] = v
 	}
 
+	return nil
+}
+
+func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) error {
 	return nil
 }

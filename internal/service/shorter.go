@@ -54,10 +54,6 @@ func (s *Shorter) AllByUser(id string) ([]*core.ShortURL, error) {
 	return s.shorterRepository.AllByUserID(id)
 }
 
-func (s *Shorter) DeleteBatch(ctx context.Context) error {
-	return nil
-}
-
 func generateURLID() string {
 	return rand.RandSeq(lengthShortID)
 }

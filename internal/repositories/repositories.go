@@ -11,4 +11,5 @@ type ShortURLRepository interface {
 	GetByID(id string) (*core.ShortURL, bool)
 	AllByUserID(id string) ([]*core.ShortURL, error)
 	CreateBatchWithContext(ctx context.Context, shortURLs *[]*core.ShortURL) error
+	DeleteURLsUserByIds(userID string, ids []string) error
 }

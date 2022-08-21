@@ -5,4 +5,5 @@ type ShortURL struct {
 	URL           string `json:"url"`
 	UserID        string `json:"userId,omitempty"`
 	CorrelationID string `json:"correlation_id,omitempty"`
+	IsDeleted     bool   `json:"isDeleted"`
 }
