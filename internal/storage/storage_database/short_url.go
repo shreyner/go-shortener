@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"time"
 
-	pg "github.com/lib/pq"
 	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/core"
@@ -153,7 +152,7 @@ func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) er
 		ctx,
 		`update short_url set deleted = true where user_id = $1 and id = any ($2);`,
 		userID,
-		pg.Array(ids),
+		ids,
 	)
 
 	return err
