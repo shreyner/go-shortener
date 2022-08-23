@@ -221,9 +221,6 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	// TODO: Отрефакторить и убрать дублирование кода
 	var shortURLCreateConflictError *sdb.ShortURLCreateConflictError
 
-	// var httpStatus := http.StatusCreated
-	//var resultURL string;
-
 	if errors.As(err, &shortURLCreateConflictError) {
 		resultURL := fmt.Sprintf("%s/%s", sh.baseURL, shortURLCreateConflictError.OriginID)
 
@@ -472,10 +469,6 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 	sh.log.Info("was delete", zap.String("userID", userID), zap.Strings("urlIDs", urlIDs))
 
 	sh.workerpoolShorter.Push(&workerpool.JobDeleteURLs{UserID: userID, URLIDs: urlIDs})
-
-	//if err := sh.ShorterRepository.DeleteURLsUserByIds(userID, urlIDs); err != nil {
-	//	sh.log.Error("error when delete", zap.Error(err))
-	//}
 
 	wr.WriteHeader(http.StatusAccepted)
 }
