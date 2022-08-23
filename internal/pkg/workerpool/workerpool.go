@@ -61,6 +61,7 @@ func (w *Worker) Loop(stopCh chan struct{}) {
 	for {
 		select {
 		case <-stopCh:
+			return
 		default:
 			t := w.queue.PopWait()
 
