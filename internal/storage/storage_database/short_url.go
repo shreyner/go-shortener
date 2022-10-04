@@ -146,7 +146,7 @@ func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) er
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	s.log.Info("Was delted", zap.String("userID", userID), zap.Strings("ids", ids))
+	s.log.Info("Was deleted", zap.String("userID", userID), zap.Strings("ids", ids))
 
 	_, err := s.db.ExecContext(
 		ctx,

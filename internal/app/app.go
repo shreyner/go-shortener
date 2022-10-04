@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"github.com/shreyner/go-shortener/internal/pkg/workerpool"
+	"github.com/shreyner/go-shortener/internal/pkg/fans"
 	"os"
 	"os/signal"
 	"syscall"
@@ -37,11 +37,9 @@ func NewApp(
 
 	services := service.NewService(store.ShortURL)
 
-	wpSortURL := workerpool.NewWorkerPool(log, func(job *workerpool.JobDeleteURLs) error {
-		return store.ShortURL.DeleteURLsUserByIds(job.UserID, job.URLIDs)
-	})
+	fansShortService := fans.NewFansShortService(store.ShortURL, 4)
 
-	r := handlers.NewRouter(log, baseURL, services.ShorterService, store.ShortURL, store, wpSortURL)
+	r := handlers.NewRouter(log, baseURL, services.ShorterService, store.ShortURL, store, fansShortService)
 	serv := server.NewServer(log, serverAddress, r)
 
 	serv.Start()
@@ -62,7 +60,7 @@ func NewApp(
 		log.Error("Got an error while stopping th rest api server", zap.Error(err))
 	}
 
-	wpSortURL.Stop()
+	fansShortService.Close()
 
 	log.Info("The app is calling the last defers and will be stopped.")
 }

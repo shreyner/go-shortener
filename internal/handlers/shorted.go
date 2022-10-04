@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/shreyner/go-shortener/internal/pkg/workerpool"
+	"github.com/shreyner/go-shortener/internal/pkg/fans"
 	"github.com/shreyner/go-shortener/internal/repositories"
 	"io"
 	"log"
@@ -41,7 +41,7 @@ type ShortedHandler struct {
 	ShorterService    ShortedService
 	ShorterRepository repositories.ShortURLRepository
 	baseURL           string
-	workerpoolShorter *workerpool.WorkerPool
+	fansShortService  *fans.FansShortService
 }
 
 func NewShortedHandler(
@@ -49,14 +49,14 @@ func NewShortedHandler(
 	baseURL string,
 	shorterService ShortedService,
 	ShorterRepository repositories.ShortURLRepository,
-	workerpoolShorter *workerpool.WorkerPool,
+	fansShortService *fans.FansShortService,
 ) *ShortedHandler {
 	return &ShortedHandler{
 		ShorterService:    shorterService,
 		ShorterRepository: ShorterRepository,
 		baseURL:           baseURL,
 		log:               log,
-		workerpoolShorter: workerpoolShorter,
+		fansShortService:  fansShortService,
 	}
 }
 
@@ -468,7 +468,7 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 
 	sh.log.Info("was delete", zap.String("userID", userID), zap.Strings("urlIDs", urlIDs))
 
-	sh.workerpoolShorter.Push(&workerpool.JobDeleteURLs{UserID: userID, URLIDs: urlIDs})
+	sh.fansShortService.Add(userID, urlIDs)
 
 	wr.WriteHeader(http.StatusAccepted)
 }

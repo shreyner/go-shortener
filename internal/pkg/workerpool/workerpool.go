@@ -69,7 +69,6 @@ func (w *Worker) Loop(stopCh chan struct{}) {
 				w.log.Error("error worker", zap.Int("workerID", w.id), zap.Error(err))
 			}
 		}
-
 	}
 }
 
