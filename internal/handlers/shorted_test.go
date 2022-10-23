@@ -135,7 +135,7 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 		defer resp.Body.Close()
 
 		mockService.AssertNotCalled(t, "Create")
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Equal(t, http.StatusUnsupportedMediaType, resp.StatusCode)
 	})
 
 	t.Run("should error method not allowed for POST /some", func(t *testing.T) {
@@ -269,7 +269,7 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		defer resp.Body.Close()
 
 		mockService.AssertNotCalled(t, "Create")
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Equal(t, http.StatusUnsupportedMediaType, resp.StatusCode)
 	})
 
 	t.Run("should error for incorrect Accept", func(t *testing.T) {

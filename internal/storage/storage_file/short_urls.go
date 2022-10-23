@@ -3,7 +3,7 @@ package storagefile
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"go.uber.org/zap"
 	"os"
 	"sync"
 
@@ -11,6 +11,7 @@ import (
 )
 
 type shortURLRepository struct {
+	log        *zap.Logger
 	pathToFile string
 	file       *os.File
 	decoder    *json.Decoder
@@ -19,7 +20,7 @@ type shortURLRepository struct {
 	mutex *sync.RWMutex
 }
 
-func NewShortURLStore(fileStoragePath string) (*shortURLRepository, error) {
+func NewShortURLStore(log *zap.Logger, fileStoragePath string) (*shortURLRepository, error) {
 	file, err := os.OpenFile(fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 
 	if err != nil {
@@ -27,6 +28,7 @@ func NewShortURLStore(fileStoragePath string) (*shortURLRepository, error) {
 	}
 
 	return &shortURLRepository{
+		log:        log,
 		pathToFile: fileStoragePath,
 		mutex:      &sync.RWMutex{},
 		file:       file,
@@ -48,7 +50,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 	file, err := os.OpenFile(s.pathToFile, os.O_RDONLY|os.O_CREATE, 0644)
 
 	if err != nil {
-		log.Printf("Error open file for read: %s", err)
+		s.log.Error("error open file for read", zap.Error(err))
 		return nil, false
 	}
 	defer file.Close()
@@ -60,7 +62,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 		err := decoder.Decode(&shortURL)
 
 		if err != nil {
-			log.Printf("Error read shorted json:%s\n", err)
+			s.log.Error("error read shorted json", zap.Error(err))
 			return nil, false
 		}
 
@@ -79,7 +81,7 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	file, err := os.OpenFile(s.pathToFile, os.O_RDONLY|os.O_CREATE, 0644)
 
 	if err != nil {
-		log.Printf("Error open file for read: %s", err)
+		s.log.Error("error open file for read", zap.Error(err))
 		return nil, err
 	}
 	defer file.Close()
@@ -93,7 +95,7 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 		err := decoder.Decode(&shortURL)
 
 		if err != nil {
-			log.Printf("Error read shorted json:%s\n", err)
+			s.log.Error("Error read shorted json", zap.Error(err))
 			return nil, err
 		}
 

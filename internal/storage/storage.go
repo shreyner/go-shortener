@@ -39,7 +39,7 @@ func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*S
 
 	if repositoryType == RepositoryTypeFile {
 		log.Info("Init file storage")
-		shorterFileRepository, err := storagefile.NewShortURLStore(fileStoragePath)
+		shorterFileRepository, err := storagefile.NewShortURLStore(log, fileStoragePath)
 
 		if err != nil {
 			return nil, fmt.Errorf("storage error when initialize file: %w", err)

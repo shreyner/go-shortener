@@ -6,7 +6,7 @@ import (
 	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/hex"
-	"log"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/shreyner/go-shortener/internal/pkg/random"
@@ -26,7 +26,7 @@ func GetUserIDFromCtx(ctx context.Context) string {
 	return v
 }
 
-func AuthHandler(key []byte) func(next http.Handler) http.Handler {
+func AuthHandler(log *zap.Logger, key []byte) func(next http.Handler) http.Handler {
 	sh := sha256.New()
 	sh.Write(key)
 
@@ -35,14 +35,14 @@ func AuthHandler(key []byte) func(next http.Handler) http.Handler {
 	aesBlock, err := aes.NewCipher(keyHash)
 	if err != nil {
 		// TODO: Убрать Fatalln. Обычный error. Сделать выбрасывание http ошибки
-		log.Fatalln(err)
+		log.Fatal("error", zap.Error(err))
 	}
 
 	aesGCM, err := cipher.NewGCM(aesBlock)
 	if err != nil {
 		// TODO: Убрать Fatalln. Обычный error. Сделать выбрасывание http ошибки
 		// TODO: Пробежаться и посомтреть по коду
-		log.Fatalln(err)
+		log.Fatal("error", zap.Error(err))
 	}
 
 	nonce := keyHash[len(keyHash)-aesGCM.NonceSize():]

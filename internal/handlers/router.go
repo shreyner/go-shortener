@@ -1,18 +1,15 @@
 package handlers
 
 import (
-	"context"
-	"github.com/shreyner/go-shortener/internal/pkg/fans"
-	"github.com/shreyner/go-shortener/internal/repositories"
-	"net/http"
-	"time"
-
+	"compress/gzip"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/shreyner/go-shortener/internal/pkg/fans"
+	"github.com/shreyner/go-shortener/internal/repositories"
+	"github.com/shreyner/go-shortener/internal/storage"
 	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/middlewares"
-	"github.com/shreyner/go-shortener/internal/storage"
 )
 
 var cookieSecretKey = []byte("triy6n9rw3")
@@ -22,61 +19,51 @@ func NewRouter(
 	baseURL string,
 	shorterService ShortedService,
 	shortURIRepository repositories.ShortURLRepository,
-	storage *storage.Storage,
 	fansShortService *fans.FansShortService,
+	storage *storage.Storage,
 ) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
-	r.Use(chiMiddleware.Logger)
+	r.Use(middlewares.NewStructuredLogger(log))
 	r.Use(chiMiddleware.Recoverer)
+	r.Use(chiMiddleware.Compress(gzip.BestSpeed))
+
+	authMiddleware := middlewares.AuthHandler(log, cookieSecretKey)
 
 	shortedHandler := NewShortedHandler(log, baseURL, shorterService, shortURIRepository, fansShortService)
+	storeHandler := NewStoreHandler(log, storage)
 
 	r.Route("/api", func(r chi.Router) {
-		r.With(middlewares.AuthHandler(cookieSecretKey)).Route("/shorten", func(r chi.Router) {
-			r.
-				With(
-					chiMiddleware.AllowContentEncoding("gzip"),
-					middlewares.GzlibCompressHandler,
-				).
-				Post("/", shortedHandler.APICreate)
+		r.With(
+			chiMiddleware.AllowContentType("application/json", "application/gzip", "application/x-gzip"),
+			authMiddleware,
+		).
+			Group(func(r chi.Router) {
+				r.Route("/shorten", func(r chi.Router) {
+					r.Post("/", shortedHandler.APICreate)
+					r.Post("/batch", shortedHandler.APICreateBatch)
+				})
 
-			r.Post("/batch", shortedHandler.APICreateBatch)
-		})
-
-		r.With(middlewares.AuthHandler(cookieSecretKey)).Route("/user", func(r chi.Router) {
-			r.Route("/urls", func(r chi.Router) {
-				r.Get("/", shortedHandler.APIUserURLs)
-				r.Delete("/", shortedHandler.APIUserDeleteURLs)
+				r.Route("/user", func(r chi.Router) {
+					r.Route("/urls", func(r chi.Router) {
+						r.Get("/", shortedHandler.APIUserURLs)
+						r.Delete("/", shortedHandler.APIUserDeleteURLs)
+					})
+				})
 			})
-		})
 	})
 
 	r.With(
-		chiMiddleware.AllowContentEncoding("gzip"),
-		middlewares.GzlibCompressHandler,
-		middlewares.AuthHandler(cookieSecretKey),
-	).
-		Post("/", shortedHandler.Create)
-
-	r.Get("/{id}", shortedHandler.Get)
-
-	r.Get("/ping", func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
-		defer cancel()
-
-		if err := storage.PingContext(ctx); err != nil {
-			log.Error("can't ping to database", zap.Error(err))
-			rw.WriteHeader(http.StatusInternalServerError)
-
-			return
-		}
-
-		rw.WriteHeader(http.StatusOK)
+		chiMiddleware.AllowContentType("text/plain", "application/gzip", "application/x-gzip"),
+		authMiddleware,
+	).Group(func(r chi.Router) {
+		r.Post("/", shortedHandler.Create)
+		r.Get("/{id}", shortedHandler.Get)
 	})
 
-	return r
+	r.Get("/ping", storeHandler.Ping)
 
+	return r
 }
