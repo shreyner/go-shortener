@@ -23,10 +23,6 @@ var (
 	ContentType = "text/plain; charset=utf-8"
 )
 
-type MyMockWorkerPool struct {
-	mock.Mock
-}
-
 type MyMockService struct {
 	mock.Mock
 }

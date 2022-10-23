@@ -2,18 +2,21 @@ package handlers
 
 import (
 	"context"
-	"github.com/shreyner/go-shortener/internal/storage"
 	"go.uber.org/zap"
 	"net/http"
 	"time"
 )
 
-type StoreHandler struct {
-	log   *zap.Logger
-	store *storage.Storage
+type Storage interface {
+	PingContext(ctx context.Context) error
 }
 
-func NewStoreHandler(log *zap.Logger, store *storage.Storage) *StoreHandler {
+type StoreHandler struct {
+	log   *zap.Logger
+	store Storage
+}
+
+func NewStoreHandler(log *zap.Logger, store Storage) *StoreHandler {
 	return &StoreHandler{
 		log:   log,
 		store: store,
