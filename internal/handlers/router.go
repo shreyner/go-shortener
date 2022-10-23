@@ -28,7 +28,7 @@ func NewRouter(
 	r.Use(chiMiddleware.RealIP)
 	r.Use(middlewares.NewStructuredLogger(log))
 	r.Use(chiMiddleware.Recoverer)
-	r.Use(chiMiddleware.Compress(gzip.BestSpeed, "application/json", "text/plain"))
+	r.Use(chiMiddleware.Compress(gzip.BestSpeed))
 
 	authMiddleware := middlewares.AuthHandler(log, cookieSecretKey)
 
@@ -37,7 +37,7 @@ func NewRouter(
 
 	r.Route("/api", func(r chi.Router) {
 		r.With(
-			chiMiddleware.AllowContentType("application/json"),
+			chiMiddleware.AllowContentType("application/json", "application/gzip", "application/x-gzip"),
 			authMiddleware,
 		).
 			Group(func(r chi.Router) {
@@ -56,7 +56,7 @@ func NewRouter(
 	})
 
 	r.With(
-		chiMiddleware.AllowContentType("text/plain"),
+		chiMiddleware.AllowContentType("text/plain", "application/gzip", "application/x-gzip"),
 		authMiddleware,
 	).
 		Post("/", shortedHandler.Create)
