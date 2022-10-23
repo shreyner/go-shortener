@@ -3,7 +3,7 @@ package storagefile
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"go.uber.org/zap"
 	"os"
 	"sync"
 
