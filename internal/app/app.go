@@ -37,7 +37,7 @@ func NewApp(
 
 	services := service.NewService(store.ShortURL)
 
-	fansShortService := fans.NewFansShortService(store.ShortURL, 4)
+	fansShortService := fans.NewFansShortService(log, store.ShortURL, 4)
 
 	r := handlers.NewRouter(log, baseURL, services.ShorterService, store.ShortURL, store, fansShortService)
 	serv := server.NewServer(log, serverAddress, r)

@@ -2,7 +2,7 @@ package fans
 
 import (
 	"github.com/shreyner/go-shortener/internal/repositories"
-	"log"
+	"go.uber.org/zap"
 )
 
 type FanDeleteJob struct {
@@ -15,7 +15,7 @@ type FansShortService struct {
 	shorterRepository repositories.ShortURLRepository
 }
 
-func NewFansShortService(rep repositories.ShortURLRepository, workerCount int) *FansShortService {
+func NewFansShortService(log *zap.Logger, rep repositories.ShortURLRepository, workerCount int) *FansShortService {
 	inputCh := make(chan *FanDeleteJob)
 
 	fansShortService := FansShortService{
@@ -36,7 +36,7 @@ func NewFansShortService(rep repositories.ShortURLRepository, workerCount int) *
 	go func(outCh chan *FanDeleteJob) {
 		for job := range outCh {
 			if err := rep.DeleteURLsUserByIds(job.UserID, job.URLIDs); err != nil {
-				log.Println("error when delete urls for user", job.UserID, err)
+				log.Error("error when delete urls for user", zap.String("userID", job.UserID), zap.Error(err))
 			}
 		}
 	}(outCh)

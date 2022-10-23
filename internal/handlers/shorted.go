@@ -10,7 +10,6 @@ import (
 	"github.com/shreyner/go-shortener/internal/pkg/fans"
 	"github.com/shreyner/go-shortener/internal/repositories"
 	"io"
-	"log"
 	"mime"
 	"net/http"
 	"net/url"
@@ -64,7 +63,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
 	if err != nil {
-		log.Printf("error: %s", err.Error())
+		sh.log.Error("error", zap.Error(err))
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -78,7 +77,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		if body, err = Decompress(r.Body); err != nil {
-			log.Printf("error: %s", err.Error())
+			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
@@ -87,7 +86,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	} else {
 		body, err = io.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("error: %s", err.Error())
+			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
@@ -98,7 +97,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	_, err = url.ParseRequestURI(string(body))
 
 	if err != nil {
-		log.Printf("error: %s", err.Error())
+		sh.log.Error("error", zap.Error(err))
 		http.Error(wr, "Invalid url", http.StatusBadRequest)
 		return
 	}
@@ -117,7 +116,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		log.Printf("error: %s", err.Error())
+		sh.log.Error("error", zap.Error(err))
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 		return
@@ -157,7 +156,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
 	if err != nil {
-		log.Printf("error: %s", err.Error())
+		sh.log.Error("error", zap.Error(err))
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -187,7 +186,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		if body, err = Decompress(r.Body); err != nil {
-			log.Printf("error: %s", err.Error())
+			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
@@ -195,7 +194,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	} else {
 		body, err = io.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("error: %s", err.Error())
+			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
@@ -278,7 +277,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
 	if err != nil {
-		log.Printf("error: %s", err.Error())
+		sh.log.Error("error", zap.Error(err))
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -308,7 +307,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		if body, err = Decompress(r.Body); err != nil {
-			log.Printf("error: %s", err.Error())
+			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
@@ -316,7 +315,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 	} else {
 		body, err = io.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("error: %s", err.Error())
+			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
@@ -410,7 +409,7 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
 	if err != nil {
-		log.Printf("error: %s", err.Error())
+		sh.log.Error("error", zap.Error(err))
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -440,7 +439,7 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		if body, err = Decompress(r.Body); err != nil {
-			log.Printf("error: %s", err.Error())
+			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
@@ -448,7 +447,7 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 	} else {
 		body, err = io.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("error: %s", err.Error())
+			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
