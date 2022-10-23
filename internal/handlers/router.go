@@ -6,6 +6,7 @@ import (
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/shreyner/go-shortener/internal/pkg/fans"
 	"github.com/shreyner/go-shortener/internal/repositories"
+	"github.com/shreyner/go-shortener/internal/storage"
 	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/middlewares"
@@ -19,6 +20,7 @@ func NewRouter(
 	shorterService ShortedService,
 	shortURIRepository repositories.ShortURLRepository,
 	fansShortService *fans.FansShortService,
+	storage *storage.Storage,
 ) *chi.Mux {
 	r := chi.NewRouter()
 
@@ -26,11 +28,12 @@ func NewRouter(
 	r.Use(chiMiddleware.RealIP)
 	r.Use(middlewares.NewStructuredLogger(log))
 	r.Use(chiMiddleware.Recoverer)
-	r.Use(chiMiddleware.Compress(gzip.BestSpeed, "gzip"))
+	r.Use(chiMiddleware.Compress(gzip.BestSpeed, "application/x-gzip"))
 
 	authMiddleware := middlewares.AuthHandler(log, cookieSecretKey)
 
 	shortedHandler := NewShortedHandler(log, baseURL, shorterService, shortURIRepository, fansShortService)
+	storeHandler := NewStoreHandler(log, storage)
 
 	r.Route("/api", func(r chi.Router) {
 		r.With(
@@ -59,6 +62,8 @@ func NewRouter(
 		Post("/", shortedHandler.Create)
 
 	r.Get("/{id}", shortedHandler.Get)
+
+	r.Get("/ping", storeHandler.Ping)
 
 	return r
 }

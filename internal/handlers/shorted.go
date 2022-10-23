@@ -42,12 +42,12 @@ func NewShortedHandler(
 	log *zap.Logger,
 	baseURL string,
 	shorterService ShortedService,
-	ShorterRepository repositories.ShortURLRepository,
+	shorterRepository repositories.ShortURLRepository,
 	fansShortService *fans.FansShortService,
 ) *ShortedHandler {
 	return &ShortedHandler{
 		ShorterService:    shorterService,
-		ShorterRepository: ShorterRepository,
+		ShorterRepository: shorterRepository,
 		baseURL:           baseURL,
 		log:               log,
 		fansShortService:  fansShortService,
