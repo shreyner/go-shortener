@@ -28,7 +28,7 @@ func NewRouter(
 	r.Use(chiMiddleware.RealIP)
 	r.Use(middlewares.NewStructuredLogger(log))
 	r.Use(chiMiddleware.Recoverer)
-	r.Use(chiMiddleware.Compress(gzip.BestSpeed, "application/x-gzip"))
+	r.Use(chiMiddleware.Compress(gzip.BestSpeed, "application/json", "text/plain"))
 
 	authMiddleware := middlewares.AuthHandler(log, cookieSecretKey)
 
