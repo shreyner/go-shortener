@@ -28,12 +28,14 @@ func NewRouter(
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(chiMiddleware.Compress(gzip.BestSpeed, "gzip"))
 
+	authMiddleware := middlewares.AuthHandler(log, cookieSecretKey)
+
 	shortedHandler := NewShortedHandler(log, baseURL, shorterService, shortURIRepository, fansShortService)
 
 	r.Route("/api", func(r chi.Router) {
 		r.With(
 			chiMiddleware.AllowContentType("application/json"),
-			middlewares.AuthHandler(cookieSecretKey),
+			authMiddleware,
 		).
 			Group(func(r chi.Router) {
 				r.Route("/shorten", func(r chi.Router) {
@@ -51,8 +53,8 @@ func NewRouter(
 	})
 
 	r.With(
-		middlewares.AuthHandler(cookieSecretKey),
 		chiMiddleware.AllowContentType("text/plain"),
+		authMiddleware,
 	).
 		Post("/", shortedHandler.Create)
 
