@@ -58,10 +58,10 @@ func NewRouter(
 	r.With(
 		chiMiddleware.AllowContentType("text/plain", "application/gzip", "application/x-gzip"),
 		authMiddleware,
-	).
-		Post("/", shortedHandler.Create)
-
-	r.Get("/{id}", shortedHandler.Get)
+	).Group(func(r chi.Router) {
+		r.Post("/", shortedHandler.Create)
+		r.Get("/{id}", shortedHandler.Get)
+	})
 
 	r.Get("/ping", storeHandler.Ping)
 
