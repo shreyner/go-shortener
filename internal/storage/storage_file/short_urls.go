@@ -8,6 +8,11 @@ import (
 	"sync"
 
 	"github.com/shreyner/go-shortener/internal/core"
+	"github.com/shreyner/go-shortener/internal/repositories"
+)
+
+var (
+	_ repositories.ShortURLRepository = (*shortURLRepository)(nil)
 )
 
 type shortURLRepository struct {

@@ -3,11 +3,16 @@ package storagedatabase
 import (
 	"context"
 	"database/sql"
+	"github.com/shreyner/go-shortener/internal/repositories"
 	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/core"
+)
+
+var (
+	_ repositories.ShortURLRepository = (*shortURLRepository)(nil)
 )
 
 type shortURLRepository struct {
