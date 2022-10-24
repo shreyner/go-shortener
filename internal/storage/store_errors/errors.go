@@ -1,4 +1,4 @@
-package storagedatabase
+package store_errors
 
 import (
 	"fmt"

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/shreyner/go-shortener/internal/pkg/fans"
 	"github.com/shreyner/go-shortener/internal/repositories"
+	sdb "github.com/shreyner/go-shortener/internal/storage/store_errors"
 	"io"
 	"mime"
 	"net/http"
@@ -21,7 +22,6 @@ import (
 
 	"github.com/shreyner/go-shortener/internal/core"
 	"github.com/shreyner/go-shortener/internal/middlewares"
-	sdb "github.com/shreyner/go-shortener/internal/storage/storage_database"
 )
 
 var (

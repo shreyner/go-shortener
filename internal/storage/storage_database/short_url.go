@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/shreyner/go-shortener/internal/repositories"
+	"github.com/shreyner/go-shortener/internal/storage/store_errors"
 	"time"
 
 	"go.uber.org/zap"
@@ -57,7 +58,7 @@ func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 	}
 
 	if resultID != shortURL.ID {
-		return NewShortURLCreateConflictError(resultID)
+		return store_errors.NewShortURLCreateConflictError(resultID)
 	}
 
 	return nil
