@@ -3,11 +3,15 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"fmt"
+	service2 "github.com/shreyner/go-shortener/internal/service"
+	"github.com/shreyner/go-shortener/internal/storage"
 	"go.uber.org/zap"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -208,7 +212,7 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 
 		mockService.On("Create", mock.Anything, "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
 
-		resp, respBody := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, acceptType, "{\"url\":\"https://ya.ru/\"}")
+		resp, respBody := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, acceptType, `{"url":"https://ya.ru/"}`)
 		defer resp.Body.Close()
 
 		mockService.AssertExpectations(t)
@@ -281,4 +285,46 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		mockService.AssertNotCalled(t, "Create")
 		assert.Equal(t, http.StatusNotAcceptable, resp.StatusCode)
 	})
+}
+
+func BenchmarkShortedHandler_APICreate(b *testing.B) {
+	var indexRequest int64 = 0
+	memoRepository, _ := storage.NewStorage(
+		zap.NewNop(),
+		"",
+		"",
+	)
+	defer memoRepository.Close()
+
+	service := service2.NewService(
+		memoRepository.ShortURL,
+	)
+
+	// TODO: Стоит отрефачить создание сервисов и репозитория, для избавления от единого конструктора
+	shortedHandler := NewShortedHandler(
+		zap.NewNop(),
+		"http://localhost:8080",
+		service.ShorterService,
+		memoRepository.ShortURL,
+		nil,
+	)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		index := atomic.AddInt64(&indexRequest, 1)
+		body := fmt.Sprintf(`{"url": "https://ya.ru/%v"}`, index)
+		req := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/shorten/", bytes.NewBufferString(body))
+		req.Header.Set("Content-Type", "application/json")
+		wr := httptest.NewRecorder()
+
+		b.StartTimer()
+		shortedHandler.APICreate(wr, req)
+		b.StopTimer()
+
+		if wr.Code != http.StatusCreated {
+			b.Fatal("unexpected response status code", wr.Code)
+		}
+	}
 }

@@ -64,6 +64,8 @@ func NewRouter(
 
 	r.Get("/ping", storeHandler.Ping)
 
+	r.Mount("/debug", chiMiddleware.Profiler())
+
 	return r
 
 }
