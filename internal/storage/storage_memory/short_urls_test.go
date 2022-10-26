@@ -13,7 +13,7 @@ func TestNewShortURLStore(t *testing.T) {
 	t.Run("should success create tests", func(t *testing.T) {
 		got := NewShortURLStore()
 
-		if got != nil {
+		if got == nil {
 			t.Errorf("NewShortURLStore() = %v", got)
 		}
 	})
