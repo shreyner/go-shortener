@@ -58,7 +58,7 @@ func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 	}
 
 	if resultID != shortURL.ID {
-		return store_errors.NewShortURLCreateConflictError(resultID)
+		return storeerrors.NewShortURLCreateConflictError(resultID)
 	}
 
 	return nil

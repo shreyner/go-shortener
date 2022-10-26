@@ -48,7 +48,6 @@ func main() {
 			for {
 				select {
 				case <-gCtx.Done():
-					//log.Println("close")
 					return nil
 				default:
 					res2 := fmt.Sprintf(`{"url": "https://ya.ru/%v"}`, atomic.AddInt64(&indexRequest, 1))
@@ -71,8 +70,6 @@ func main() {
 					}
 				}
 			}
-
-			return nil
 		})
 	}
 
@@ -102,6 +99,4 @@ func main() {
 
 	log.Println("count request", atomic.LoadInt64(&indexRequest))
 	log.Println("Success result")
-
-	return
 }
