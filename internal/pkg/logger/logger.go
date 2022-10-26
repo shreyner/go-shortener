@@ -9,6 +9,8 @@ import (
 func InitLogger(cfg *config.Config) (*zap.Logger, error) {
 	cfgLog := zap.NewDevelopmentConfig()
 
+	cfgLog.Level = zap.NewAtomicLevelAt(zap.ErrorLevel)
+
 	cfgLog.DisableStacktrace = true
 
 	logger, err := cfgLog.Build()

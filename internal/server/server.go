@@ -2,9 +2,8 @@ package server
 
 import (
 	"context"
-	"net/http"
-
 	"go.uber.org/zap"
+	"net/http"
 )
 
 type Server struct {

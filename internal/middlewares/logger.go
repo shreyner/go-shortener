@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"fmt"
+	"github.com/shreyner/go-shortener/internal/pkg/pool"
 	"net/http"
 	"time"
 
@@ -13,9 +14,22 @@ type StructuredLogger struct {
 	Logger *zap.Logger
 }
 
+type StructuredLoggerEntryPool struct {
+	pool.Pool[StructuredLoggerEntry]
+}
+
+func (p *StructuredLoggerEntryPool) Put(v *StructuredLoggerEntry) {
+	v.Logger = nil
+	p.Pool.Put(v)
+}
+
+var structuredLoggerEntryPool = &StructuredLoggerEntryPool{}
+
 func (s *StructuredLogger) NewLogEntry(r *http.Request) middleware.LogEntry {
-	entry := &StructuredLoggerEntry{Logger: s.Logger.Named("Http Request")}
-	fields := make([]zap.Field, 0)
+	entry := structuredLoggerEntryPool.Get()
+	entry.Logger = s.Logger
+
+	fields := make([]zap.Field, 0, 5)
 
 	//fields = append(fields, zap.String("ts", time.Now().UTC().Format(time.RFC1123)))
 
@@ -70,5 +84,7 @@ func (s *StructuredLoggerEntry) Panic(v interface{}, stack []byte) {
 }
 
 func NewStructuredLogger(logger *zap.Logger) func(next http.Handler) http.Handler {
-	return middleware.RequestLogger(&StructuredLogger{logger})
+	return middleware.RequestLogger(&StructuredLogger{
+		Logger: logger.Named("Http Request"),
+	})
 }

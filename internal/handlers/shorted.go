@@ -7,21 +7,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-chi/chi/v5"
+	"github.com/shreyner/go-shortener/internal/core"
+	"github.com/shreyner/go-shortener/internal/middlewares"
 	"github.com/shreyner/go-shortener/internal/pkg/fans"
+	"github.com/shreyner/go-shortener/internal/pkg/pool"
 	"github.com/shreyner/go-shortener/internal/repositories"
 	sdb "github.com/shreyner/go-shortener/internal/storage/store_errors"
+	"github.com/timewasted/go-accept-headers"
+	"go.uber.org/zap"
 	"io"
 	"mime"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/timewasted/go-accept-headers"
-	"go.uber.org/zap"
-
-	"github.com/shreyner/go-shortener/internal/core"
-	"github.com/shreyner/go-shortener/internal/middlewares"
 )
 
 var (
@@ -148,9 +147,31 @@ type ShortedCreateDTO struct {
 	URL string `json:"url"`
 }
 
+type ShortedCreateDTOPool struct {
+	pool.Pool[ShortedCreateDTO]
+}
+
+func (p *ShortedCreateDTOPool) Put(v *ShortedCreateDTO) {
+	v.URL = ""
+	p.Pool.Put(v)
+}
+
+var shortedCreateDTOPool = &ShortedCreateDTOPool{}
+
 type ShortedResponseDTO struct {
 	Result string `json:"result"`
 }
+
+type ShortedResponseDTOPool struct {
+	pool.Pool[ShortedResponseDTO]
+}
+
+func (p *ShortedResponseDTOPool) Put(v *ShortedResponseDTO) {
+	v.Result = ""
+	p.Pool.Put(v)
+}
+
+var shortedResponseDTOPool = &ShortedResponseDTOPool{}
 
 func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
@@ -202,7 +223,8 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	var shortedCreateDTO ShortedCreateDTO
+	shortedCreateDTO := shortedCreateDTOPool.Get()
+	defer shortedCreateDTOPool.Put(shortedCreateDTO)
 
 	if err := json.Unmarshal(body, &shortedCreateDTO); err != nil {
 		http.Error(wr, "Error parse body", http.StatusInternalServerError)
@@ -248,7 +270,9 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 
 	resultURL := fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)
 
-	responseCreateDTO := ShortedResponseDTO{Result: resultURL}
+	responseCreateDTO := shortedResponseDTOPool.Get()
+	responseCreateDTO.Result = resultURL
+	defer shortedResponseDTOPool.Put(responseCreateDTO)
 
 	responseBody, err := json.Marshal(responseCreateDTO)
 

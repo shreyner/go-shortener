@@ -16,9 +16,17 @@ import (
 
 var (
 	indexRequest      int64 = 0
-	countWorker             = 2
+	countWorker             = 350
 	endpointAPICreate       = "http://localhost:8080/api/shorten/"
 	client                  = &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost: 10000,
+			MaxIdleConns:        10000,
+			IdleConnTimeout:     30 * time.Second,
+			DisableCompression:  true,
+			DisableKeepAlives:   false,
+			ForceAttemptHTTP2:   false,
+		},
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
@@ -34,12 +42,13 @@ func main() {
 
 	g, gCtx := errgroup.WithContext(tCtx)
 
+	// Для нагружалки сделать более тяжелую и больше го рутин
 	for i := 0; i < countWorker; i++ {
 		g.Go(func() error {
 			for {
 				select {
 				case <-gCtx.Done():
-					log.Println("close")
+					//log.Println("close")
 					return nil
 				default:
 					res2 := fmt.Sprintf(`{"url": "https://ya.ru/%v"}`, atomic.AddInt64(&indexRequest, 1))
@@ -91,6 +100,7 @@ func main() {
 		return
 	}
 
+	log.Println("count request", atomic.LoadInt64(&indexRequest))
 	log.Println("Success result")
 
 	return

@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	lengthShortID = 4
+	lengthShortID = 10
 )
 
 type Shorter struct {
@@ -23,15 +23,15 @@ func NewShorter(shorterRepository repositories.ShortURLRepository) *Shorter {
 
 func (s *Shorter) Create(userID, url string) (*core.ShortURL, error) {
 	id := generateURLID()
-	shortURL := core.ShortURL{ID: id, URL: url, UserID: userID}
+	shortURL := &core.ShortURL{ID: id, URL: url, UserID: userID}
 
-	err := s.shorterRepository.Add(&shortURL)
+	err := s.shorterRepository.Add(shortURL)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &shortURL, nil
+	return shortURL, nil
 }
 
 func (s *Shorter) CreateBatchWithContext(ctx context.Context, shortURLs *[]*core.ShortURL) error {

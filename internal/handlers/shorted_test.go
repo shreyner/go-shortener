@@ -300,7 +300,6 @@ func BenchmarkShortedHandler_APICreate(b *testing.B) {
 		memoRepository.ShortURL,
 	)
 
-	// TODO: Стоит отрефачить создание сервисов и репозитория, для избавления от единого конструктора
 	shortedHandler := NewShortedHandler(
 		zap.NewNop(),
 		"http://localhost:8080",
