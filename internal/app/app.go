@@ -2,10 +2,11 @@ package app
 
 import (
 	"context"
-	"github.com/shreyner/go-shortener/internal/pkg/fans"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/shreyner/go-shortener/internal/pkg/fans"
 
 	"go.uber.org/zap"
 

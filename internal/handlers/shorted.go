@@ -7,6 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"mime"
+	"net/http"
+	"net/url"
+	"strings"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/shreyner/go-shortener/internal/core"
 	"github.com/shreyner/go-shortener/internal/middlewares"
@@ -16,11 +22,6 @@ import (
 	sdb "github.com/shreyner/go-shortener/internal/storage/store_errors"
 	"github.com/timewasted/go-accept-headers"
 	"go.uber.org/zap"
-	"io"
-	"mime"
-	"net/http"
-	"net/url"
-	"strings"
 )
 
 var (

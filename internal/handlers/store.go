@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type Storage interface {

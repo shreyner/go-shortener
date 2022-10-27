@@ -2,9 +2,10 @@ package middlewares
 
 import (
 	"fmt"
-	"github.com/shreyner/go-shortener/internal/pkg/pool"
 	"net/http"
 	"time"
+
+	"github.com/shreyner/go-shortener/internal/pkg/pool"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/shreyner/go-shortener/internal/core"
 	rand "github.com/shreyner/go-shortener/internal/pkg/random"
 	"github.com/shreyner/go-shortener/internal/repositories"

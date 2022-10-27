@@ -2,9 +2,10 @@ package storagememory
 
 import (
 	"context"
+	"sync"
+
 	"github.com/shreyner/go-shortener/internal/core"
 	"github.com/shreyner/go-shortener/internal/repositories"
-	"sync"
 )
 
 var (
