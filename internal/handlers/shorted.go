@@ -412,7 +412,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 		return
 	}
 
-	resultShortURLs := make([]ShortedResponseBatchDTO, 0, len(shoredURLs))
+	resultShortURLs := make([]ShortedResponseBatchDTO, len(shoredURLs))
 
 	for i, v := range shoredURLs {
 		resultURL := fmt.Sprintf("%s/%s", sh.baseURL, v.ID)
@@ -462,7 +462,7 @@ func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseDTO := make([]AllShortedUser, 0, len(content))
+	responseDTO := make([]AllShortedUser, len(content))
 
 	for i, shortURL := range content {
 		responseDTO[i] = AllShortedUser{ShortURL: fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID), OriginalURL: shortURL.URL}
