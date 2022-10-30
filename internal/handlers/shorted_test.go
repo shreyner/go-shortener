@@ -3,17 +3,18 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"sync/atomic"
-	"testing"
-
 	service2 "github.com/shreyner/go-shortener/internal/service"
 	"github.com/shreyner/go-shortener/internal/storage"
 	"go.uber.org/zap"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync/atomic"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -79,7 +80,7 @@ func testRequest(t *testing.T, ts *httptest.Server, method, path, contentType, a
 	resp, err := client.Do(req)
 	require.NoError(t, err)
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Println("Some Error", err)
@@ -326,5 +327,238 @@ func BenchmarkShortedHandler_APICreate(b *testing.B) {
 		if wr.Code != http.StatusCreated {
 			b.Fatal("unexpected response status code", wr.Code)
 		}
+	}
+}
+
+func ExampleShortedHandler_Create() {
+	req, err := http.NewRequest("POST", "http://localhost:8080/", strings.NewReader("https://yandex.ru"))
+
+	if err != nil {
+		return
+	}
+
+	req.Header.Set("Content-Type", "text/plain")
+
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return
+	}
+
+	body, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
+
+	if err != nil {
+		return
+	}
+
+	fmt.Println(body) // http://localhost:8080/Sfnvdf
+}
+
+func ExampleShortedHandler_Get() {
+	req, err := http.NewRequest("GET", "http://localhost:8080/Sfnvdf", nil)
+
+	if err != nil {
+		return
+	}
+
+	client := http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	res, err := client.Do(req)
+
+	if err != nil {
+		return
+	}
+
+	defer res.Body.Close()
+
+	URL := res.Header.Get("Location")
+
+	fmt.Println(URL) // https://ya.ru
+}
+
+func ExampleShortedHandler_APICreate() {
+	requestBody := `
+		{
+			"url": "https://ya.ru"
+		}
+	`
+	userCookie := &http.Cookie{
+		Name:  "auth",
+		Value: "authCookieFormFirstRequest",
+		Path:  "/",
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:8080/api/shorten/", strings.NewReader(requestBody))
+
+	if err != nil {
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(userCookie)
+
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return
+	}
+
+	defer res.Body.Close()
+
+	bodyRaw, err := io.ReadAll(res.Body)
+
+	if err != nil {
+		return
+	}
+
+	var result *ShortedResponseDTO
+	err = json.Unmarshal(bodyRaw, result)
+
+	if err != nil {
+		return
+	}
+
+	fmt.Println(result.Result) // http://localhost:8080/Sfnvdf
+}
+
+func ExampleShortedHandler_APICreateBatch() {
+	requestBody := `
+		[
+			{
+				"correlation_id": "1",
+				"original_url": "https://ya.ru"
+			},
+			{
+				"correlation_id": "2",
+				"original_url": "https://vk.com"
+			},
+		]
+	`
+	userCookie := &http.Cookie{
+		Name:  "auth",
+		Value: "authCookieFormFirstRequest",
+		Path:  "/",
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:8080/api/shorten/batch", strings.NewReader(requestBody))
+
+	if err != nil {
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(userCookie)
+
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return
+	}
+
+	defer res.Body.Close()
+
+	bodyRaw, err := io.ReadAll(res.Body)
+
+	if err != nil {
+		return
+	}
+
+	var result []*ShortedResponseBatchDTO
+	err = json.Unmarshal(bodyRaw, &result)
+
+	if err != nil {
+		return
+	}
+
+	for _, responseDTO := range result {
+		fmt.Printf("correlation: %v, short: %v", responseDTO.CorrelationID, responseDTO.ShortURL)
+	}
+
+	// correlation: 1, short: http://localhost:8080/aCewfns
+	// correlation: 2, short: http://localhost:8080/aMJFSNjs
+}
+
+func ExampleShortedHandler_APIUserURLs() {
+	userCookie := &http.Cookie{
+		Name:  "auth",
+		Value: "authCookieFormFirstRequest",
+		Path:  "/",
+	}
+
+	req, err := http.NewRequest("GET", "http://localhost:8080/api/user/urls", nil)
+
+	if err != nil {
+		return
+	}
+
+	req.AddCookie(userCookie)
+
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode == 204 {
+		fmt.Println("User hasn't shorten URL's")
+		return
+	}
+
+	bodyRaw, err := io.ReadAll(res.Body)
+
+	if err != nil {
+		return
+	}
+
+	var result []*ShortedAllUserUResponseDTO
+	err = json.Unmarshal(bodyRaw, &result)
+
+	if err != nil {
+		return
+	}
+
+	for _, responseDTO := range result {
+		fmt.Printf("original: %v, short: %v", responseDTO.OriginalURL, responseDTO.ShortURL)
+	}
+
+	// original: https://ya.ru, short: http://localhost:8080/aCewfns
+	// original: https://vk.com, short: http://localhost:8080/aMJFSNjs
+}
+
+func ExampleShortedHandler_APIUserDeleteURLs() {
+	requestBody := `["aCewfns", "aMJFSNjs"]`
+	userCookie := &http.Cookie{
+		Name:  "auth",
+		Value: "authCookieFormFirstRequest",
+		Path:  "/",
+	}
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/api/user/urls", strings.NewReader(requestBody))
+
+	if err != nil {
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(userCookie)
+
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != 202 {
+		fmt.Println("Error response")
+		return
 	}
 }

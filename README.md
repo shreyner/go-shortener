@@ -30,4 +30,9 @@ swag init --output ./swagger/ -d cmd/shortener -g ../../internal/handlers/router
 swag fmt -d internal
 ```
 
+## Go doc
+```shell
+godoc -http=:8080 -play
+```
+
 Затем добавьте полученные изменения в свой репозиторий.

@@ -1,3 +1,4 @@
+// Package logger create and init zap logger
 package logger
 
 import (
@@ -7,6 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// InitLogger create and init logger by app config
 func InitLogger(cfg *config.Config) (*zap.Logger, error) {
 	cfgLog := zap.NewDevelopmentConfig()
 

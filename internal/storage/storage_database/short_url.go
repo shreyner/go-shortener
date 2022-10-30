@@ -37,6 +37,7 @@ func NewShortURLStore(log *zap.Logger, db *sql.DB) (*shortURLRepository, error) 
 	}, nil
 }
 
+// Add Добавить короткую ссылку в store
 func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -65,6 +66,7 @@ func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 	return nil
 }
 
+// GetByID Получить короткую ссылку по идентификатору
 func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -88,6 +90,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 	return &shortURL, true
 }
 
+// AllByUserID получить все ссылки по идентификатору пользователя
 func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -123,6 +126,7 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	return shortURLs, nil
 }
 
+// CreateBatchWithContext Добавление ссылок пачкой
 func (s *shortURLRepository) CreateBatchWithContext(ctx context.Context, shortURLs *[]*core.ShortURL) error {
 	tx, err := s.db.Begin()
 
@@ -149,6 +153,7 @@ func (s *shortURLRepository) CreateBatchWithContext(ctx context.Context, shortUR
 	return tx.Commit()
 }
 
+// DeleteURLsUserByIds Удаление пачкой коротких ссылок от имени пользователя
 func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

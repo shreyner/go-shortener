@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// ShortURLCreateConflictError ошибка конфликта создания короткой ссылки. Содержит идентификатор ранее созданной ссылки
 type ShortURLCreateConflictError struct {
 	OriginID string
 }

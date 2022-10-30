@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	ContentTypeJSON = "application/json"
+	contentTypeJSON = "application/json"
 )
 
 type ShortedService interface {
@@ -59,15 +59,15 @@ func NewShortedHandler(
 	}
 }
 
-// Create godoc
+// Create создание короткой ссылки
 //
-// @summary Создание короткой ссылки
-// @accept  plain
-// @produce plain
-// @success 201 {string} http://localhost:8080/aAUdjf
-// @failure 409 {string} message
-// @failure 500 {string} message
-// @router  / [post]
+//	@summary Создание короткой ссылки
+//	@accept  plain
+//	@produce plain
+//	@success 201 {string} http://localhost:8080/aAUdjf
+//	@failure 409 {string} message
+//	@failure 500 {string} message
+//	@router  / [post]
 func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
@@ -134,14 +134,14 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	wr.Write([]byte(fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)))
 }
 
-// Get godoc
+// Get Редирект по короткой ссылке
 //
-// @summary Редирект по короткой ссылке
-// @param   id path string true "URL ID"
-// @success 307
-// @failure 404 {string} message
-// @failure 409 {string} message Was deleted
-// @router  /{id} [get]
+//	@summary Редирект по короткой ссылке
+//	@param   id path string true "URL ID"
+//	@success 307
+//	@failure 404 {string} message
+//	@failure 409 {string} message Was deleted
+//	@router  /{id} [get]
 func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
 	shortCode := chi.URLParam(r, "id")
 
@@ -190,18 +190,18 @@ func (p *ShortedResponseDTOPool) Put(v *ShortedResponseDTO) {
 
 var shortedResponseDTOPool = &ShortedResponseDTOPool{}
 
-// APICreate godoc
+// APICreate REST API обработчик создания коротких ссылок
 //
-// @summary Создание короткой ссылки
-// @tags    apiShorten
-// @accept  json
-// @produce json
-// @param   request body     ShortedCreateDTO true "Ссылка для сокращения"
-// @success 201     {object} ShortedResponseDTO
-// @failure 409     {object} ShortedResponseDTO Ранее созданная короткая ссылка
-// @failure 400     {string} string             message
-// @failure 500     {string} string             message
-// @router  /api/shorten/ [post]
+//	@summary Создание короткой ссылки
+//	@tags    apiShorten
+//	@accept  json
+//	@produce json
+//	@param   request body     ShortedCreateDTO true "Ссылка для сокращения"
+//	@success 201     {object} ShortedResponseDTO
+//	@failure 409     {object} ShortedResponseDTO Ранее созданная короткая ссылка
+//	@failure 400     {string} string             message
+//	@failure 500     {string} string             message
+//	@router  /api/shorten/ [post]
 func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
@@ -211,7 +211,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if mediaType != ContentTypeJSON {
+	if mediaType != contentTypeJSON {
 		http.Error(wr, "bad request", http.StatusBadRequest)
 		return
 	}
@@ -219,14 +219,14 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	acceptHeader := r.Header.Get("Accept")
 
 	if acceptHeader != "" {
-		crossAccepting, err := accept.Negotiate(acceptHeader, ContentTypeJSON)
+		crossAccepting, err := accept.Negotiate(acceptHeader, contentTypeJSON)
 
 		if err != nil {
 			http.Error(wr, "bad headers", http.StatusBadRequest)
 			return
 		}
 
-		if crossAccepting != ContentTypeJSON {
+		if crossAccepting != contentTypeJSON {
 			http.Error(wr, "bad accepting content", http.StatusNotAcceptable)
 			return
 		}
@@ -326,17 +326,17 @@ type ShortedResponseBatchDTO struct {
 	ShortURL      string `json:"short_url" example:"http://localhost:8080/JfnfgyS"`
 }
 
-// APICreateBatch godoc
+// APICreateBatch Создание короткой ссылки по массиву
 //
-// @summary Создание короткой ссылки по массиву
-// @tags    apiShorten
-// @accept  json
-// @produce json
-// @param   request body     []ShortedCreateBatchDTO true "Ссылки для сокращения"
-// @success 201     {array}  ShortedResponseBatchDTO
-// @failure 400     {string} string message
-// @failure 500     {string} string message
-// @router  /api/shorten/batch [post]
+//	@summary Создание короткой ссылки по массиву
+//	@tags    apiShorten
+//	@accept  json
+//	@produce json
+//	@param   request body     []ShortedCreateBatchDTO true "Ссылки для сокращения"
+//	@success 201     {array}  ShortedResponseBatchDTO
+//	@failure 400     {string} string message
+//	@failure 500     {string} string message
+//	@router  /api/shorten/batch [post]
 func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
@@ -346,7 +346,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if mediaType != ContentTypeJSON {
+	if mediaType != contentTypeJSON {
 		http.Error(wr, "bad request", http.StatusBadRequest)
 		return
 	}
@@ -354,14 +354,14 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 	acceptHeader := r.Header.Get("Accept")
 
 	if acceptHeader != "" {
-		crossAccepting, err := accept.Negotiate(acceptHeader, ContentTypeJSON)
+		crossAccepting, err := accept.Negotiate(acceptHeader, contentTypeJSON)
 
 		if err != nil {
 			http.Error(wr, "bad headers", http.StatusBadRequest)
 			return
 		}
 
-		if crossAccepting != ContentTypeJSON {
+		if crossAccepting != contentTypeJSON {
 			http.Error(wr, "bad accepting content", http.StatusNotAcceptable)
 			return
 		}
@@ -432,21 +432,21 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 	wr.Write(responseBody)
 }
 
-type AllShortedUser struct {
+type ShortedAllUserUResponseDTO struct {
 	ShortURL    string `json:"short_url" example:"http://localhost:8080/Sjfnwf"`
 	OriginalURL string `json:"original_url" example:"https://ya.ru"`
 }
 
-// APIUserURLs godoc
+// APIUserURLs Получить всех коротких ссылок пользователя
 //
-// @summary Получить всех коротких ссылок пользователя
-// @tags    apiShorten
-// @produce json
-// @success 200 {array} AllShortedUser
-// @success 204
-// @failure 403
-// @failure 500
-// @router  /api/user/urls [get]
+//	@summary Получить всех коротких ссылок пользователя
+//	@tags    apiShorten
+//	@produce json
+//	@success 200 {array} ShortedAllUserUResponseDTO
+//	@success 204
+//	@failure 403
+//	@failure 500
+//	@router  /api/user/urls [get]
 func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserIDFromCtx(r.Context())
 
@@ -462,10 +462,10 @@ func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseDTO := make([]AllShortedUser, len(content))
+	responseDTO := make([]ShortedAllUserUResponseDTO, len(content))
 
 	for i, shortURL := range content {
-		responseDTO[i] = AllShortedUser{ShortURL: fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID), OriginalURL: shortURL.URL}
+		responseDTO[i] = ShortedAllUserUResponseDTO{ShortURL: fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID), OriginalURL: shortURL.URL}
 	}
 
 	newContent, err := json.Marshal(responseDTO)
@@ -479,17 +479,17 @@ func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 	wr.Write(newContent)
 }
 
-// APIUserDeleteURLs godoc
+// APIUserDeleteURLs Удаление ссылок пользователем
 //
-// @summary Удаление ссылок пользователем
-// @tags    apiShorten
-// @accept  json
-// @param   request body []string true "Массив идентификаторов коротких ссылок"
-// @success 202
-// @failure 400
-// @failure 403
-// @failure 500
-// @router  /api/user/urls [delete]
+//	@summary Удаление ссылок пользователем
+//	@tags    apiShorten
+//	@accept  json
+//	@param   request body []string true "Массив идентификаторов коротких ссылок"
+//	@success 202
+//	@failure 400
+//	@failure 403
+//	@failure 500
+//	@router  /api/user/urls [delete]
 func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
@@ -499,7 +499,7 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if mediaType != ContentTypeJSON {
+	if mediaType != contentTypeJSON {
 		http.Error(wr, "bad request", http.StatusBadRequest)
 		return
 	}
@@ -507,14 +507,14 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 	acceptHeader := r.Header.Get("Accept")
 
 	if acceptHeader != "" {
-		crossAccepting, err := accept.Negotiate(acceptHeader, ContentTypeJSON)
+		crossAccepting, err := accept.Negotiate(acceptHeader, contentTypeJSON)
 
 		if err != nil {
 			http.Error(wr, "bad headers", http.StatusBadRequest)
 			return
 		}
 
-		if crossAccepting != ContentTypeJSON {
+		if crossAccepting != contentTypeJSON {
 			http.Error(wr, "bad accepting content", http.StatusNotAcceptable)
 			return
 		}

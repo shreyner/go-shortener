@@ -24,7 +24,7 @@ func NewStoreHandler(log *zap.Logger, store Storage) *StoreHandler {
 	}
 }
 
-// Ping godoc
+// Ping Состояние подключения к DB
 //
 // @summary     Состояние подключения к DB
 // @description Проверка состояние подключения к базе данных

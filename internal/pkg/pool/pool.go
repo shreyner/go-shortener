@@ -1,3 +1,4 @@
+// Package pool include helpers for work witch sync.Pool
 package pool
 
 import "sync"

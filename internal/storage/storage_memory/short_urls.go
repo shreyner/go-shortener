@@ -1,3 +1,4 @@
+// Package storagememory хранилище в памяти
 package storagememory
 
 import (
@@ -24,6 +25,7 @@ func NewShortURLStore() *shortURLRepository {
 	}
 }
 
+// Add Добавить короткую ссылку в store
 func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -32,6 +34,7 @@ func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 	return nil
 }
 
+// GetByID Получить короткую ссылку по идентификатору
 func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
@@ -40,6 +43,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 	return shortURL, ok
 }
 
+// AllByUserID получить все ссылки по идентификатору пользователя
 func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
@@ -55,6 +59,7 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	return result, nil
 }
 
+// CreateBatchWithContext Добавление ссылок пачкой
 func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs *[]*core.ShortURL) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -66,6 +71,7 @@ func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs
 	return nil
 }
 
+// DeleteURLsUserByIds Удаление пачкой коротких ссылок от имени пользователя
 func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) error {
 	return nil
 }
