@@ -24,6 +24,14 @@ func NewStoreHandler(log *zap.Logger, store Storage) *StoreHandler {
 	}
 }
 
+// Ping godoc
+//
+// @summary     Состояние подключения к DB
+// @description Проверка состояние подключения к базе данных
+// @tags        HealthAPI
+// @success     200
+// @failure     500
+// @router      /ping [get]
 func (s *StoreHandler) Ping(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()

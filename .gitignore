@@ -18,6 +18,7 @@ cmd/shortener/shortener
 # Dependency directories (remove the comment below to include it)
 vendor/
 data/
+swagger/
 
 # IDEs directories
 .idea

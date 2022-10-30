@@ -47,18 +47,27 @@ func NewShortedHandler(
 	log *zap.Logger,
 	baseURL string,
 	shorterService ShortedService,
-	ShorterRepository repositories.ShortURLRepository,
+	shorterRepository repositories.ShortURLRepository,
 	fansShortService *fans.FansShortService,
 ) *ShortedHandler {
 	return &ShortedHandler{
 		ShorterService:    shorterService,
-		ShorterRepository: ShorterRepository,
+		ShorterRepository: shorterRepository,
 		baseURL:           baseURL,
 		log:               log,
 		fansShortService:  fansShortService,
 	}
 }
 
+// Create godoc
+//
+// @summary Создание короткой ссылки
+// @accept  plain
+// @produce plain
+// @success 201 {string} http://localhost:8080/aAUdjf
+// @failure 409 {string} message
+// @failure 500 {string} message
+// @router  / [post]
 func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
@@ -76,13 +85,12 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	var body []byte
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		if body, err = Decompress(r.Body); err != nil {
+		if body, err = decompress(r.Body); err != nil {
 			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
 			return
 		}
-
 	} else {
 		body, err = io.ReadAll(r.Body)
 		if err != nil {
@@ -126,6 +134,14 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 	wr.Write([]byte(fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID)))
 }
 
+// Get godoc
+//
+// @summary Редирект по короткой ссылке
+// @param   id path string true "URL ID"
+// @success 307
+// @failure 404 {string} message
+// @failure 409 {string} message Was deleted
+// @router  /{id} [get]
 func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
 	shortCode := chi.URLParam(r, "id")
 
@@ -145,7 +161,7 @@ func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
 }
 
 type ShortedCreateDTO struct {
-	URL string `json:"url"`
+	URL string `json:"url" example:"https://ya.ru"`
 }
 
 type ShortedCreateDTOPool struct {
@@ -160,7 +176,7 @@ func (p *ShortedCreateDTOPool) Put(v *ShortedCreateDTO) {
 var shortedCreateDTOPool = &ShortedCreateDTOPool{}
 
 type ShortedResponseDTO struct {
-	Result string `json:"result"`
+	Result string `json:"result" example:"http://localhost:8080/Jndshf"`
 }
 
 type ShortedResponseDTOPool struct {
@@ -174,6 +190,18 @@ func (p *ShortedResponseDTOPool) Put(v *ShortedResponseDTO) {
 
 var shortedResponseDTOPool = &ShortedResponseDTOPool{}
 
+// APICreate godoc
+//
+// @summary Создание короткой ссылки
+// @tags    apiShorten
+// @accept  json
+// @produce json
+// @param   request body     ShortedCreateDTO true "Ссылка для сокращения"
+// @success 201     {object} ShortedResponseDTO
+// @failure 409     {object} ShortedResponseDTO Ранее созданная короткая ссылка
+// @failure 400     {string} string             message
+// @failure 500     {string} string             message
+// @router  /api/shorten/ [post]
 func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
@@ -207,7 +235,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	var body []byte
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		if body, err = Decompress(r.Body); err != nil {
+		if body, err = decompress(r.Body); err != nil {
 			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
@@ -289,15 +317,26 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 }
 
 type ShortedCreateBatchDTO struct {
-	CorrelationID string `json:"correlation_id"`
-	OriginalURL   string `json:"original_url"`
+	CorrelationID string `json:"correlation_id" example:"1"`
+	OriginalURL   string `json:"original_url" example:"https://ya.ru"`
 }
 
 type ShortedResponseBatchDTO struct {
-	CorrelationID string `json:"correlation_id"`
-	ShortURL      string `json:"short_url"`
+	CorrelationID string `json:"correlation_id" example:"1"`
+	ShortURL      string `json:"short_url" example:"http://localhost:8080/JfnfgyS"`
 }
 
+// APICreateBatch godoc
+//
+// @summary Создание короткой ссылки по массиву
+// @tags    apiShorten
+// @accept  json
+// @produce json
+// @param   request body     []ShortedCreateBatchDTO true "Ссылки для сокращения"
+// @success 201     {array}  ShortedResponseBatchDTO
+// @failure 400     {string} string message
+// @failure 500     {string} string message
+// @router  /api/shorten/batch [post]
 func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
@@ -331,7 +370,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 	var body []byte
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		if body, err = Decompress(r.Body); err != nil {
+		if body, err = decompress(r.Body); err != nil {
 			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
@@ -373,7 +412,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 		return
 	}
 
-	resultShortURLs := make([]ShortedResponseBatchDTO, len(shoredURLs))
+	resultShortURLs := make([]ShortedResponseBatchDTO, 0, len(shoredURLs))
 
 	for i, v := range shoredURLs {
 		resultURL := fmt.Sprintf("%s/%s", sh.baseURL, v.ID)
@@ -394,10 +433,20 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 }
 
 type AllShortedUser struct {
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
+	ShortURL    string `json:"short_url" example:"http://localhost:8080/Sjfnwf"`
+	OriginalURL string `json:"original_url" example:"https://ya.ru"`
 }
 
+// APIUserURLs godoc
+//
+// @summary Получить всех коротких ссылок пользователя
+// @tags    apiShorten
+// @produce json
+// @success 200 {array} AllShortedUser
+// @success 204
+// @failure 403
+// @failure 500
+// @router  /api/user/urls [get]
 func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserIDFromCtx(r.Context())
 
@@ -413,7 +462,7 @@ func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseDTO := make([]AllShortedUser, len(content))
+	responseDTO := make([]AllShortedUser, 0, len(content))
 
 	for i, shortURL := range content {
 		responseDTO[i] = AllShortedUser{ShortURL: fmt.Sprintf("%s/%s", sh.baseURL, shortURL.ID), OriginalURL: shortURL.URL}
@@ -430,6 +479,17 @@ func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 	wr.Write(newContent)
 }
 
+// APIUserDeleteURLs godoc
+//
+// @summary Удаление ссылок пользователем
+// @tags    apiShorten
+// @accept  json
+// @param   request body []string true "Массив идентификаторов коротких ссылок"
+// @success 202
+// @failure 400
+// @failure 403
+// @failure 500
+// @router  /api/user/urls [delete]
 func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Request) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
@@ -463,7 +523,7 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 	var body []byte
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		if body, err = Decompress(r.Body); err != nil {
+		if body, err = decompress(r.Body); err != nil {
 			sh.log.Error("error", zap.Error(err))
 			http.Error(wr, err.Error(), http.StatusInternalServerError)
 
@@ -497,7 +557,7 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 	wr.WriteHeader(http.StatusAccepted)
 }
 
-func Decompress(dateRead io.Reader) ([]byte, error) {
+func decompress(dateRead io.Reader) ([]byte, error) {
 	gr, err := gzip.NewReader(dateRead)
 
 	if err != nil {

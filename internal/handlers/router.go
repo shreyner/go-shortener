@@ -11,6 +11,12 @@ import (
 	"github.com/shreyner/go-shortener/internal/storage"
 )
 
+// @title       Shortener API
+// @description Сервис сокращения ссылок
+// @version     1.0
+
+// @host localhost:8080
+
 var cookieSecretKey = []byte("triy6n9rw3")
 
 func NewRouter(
@@ -64,8 +70,7 @@ func NewRouter(
 
 	r.Get("/ping", storeHandler.Ping)
 
-	r.Mount("/debug", chiMiddleware.Profiler())
+	//r.Mount("/debug", chiMiddleware.Profiler())
 
 	return r
-
 }

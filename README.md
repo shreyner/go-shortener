@@ -10,14 +10,24 @@
 
 Чтобы иметь возможность получать обновления автотестов и других частей шаблона выполните следующую команду:
 
-```
+```shell
 git remote add -m main template https://github.com/yandex-praktikum/go-musthave-shortener-tpl.git
 ```
 
 Для обновления кода автотестов выполните команду:
 
-```
+```shell
 git fetch template && git checkout template/main .github
+```
+
+## swagger
+
+```shell
+swag init --output ./swagger/ -d cmd/shortener -g ../../internal/handlers/router.go --pd --parseInternal
+```
+
+```shell
+swag fmt -d internal
 ```
 
 Затем добавьте полученные изменения в свой репозиторий.
