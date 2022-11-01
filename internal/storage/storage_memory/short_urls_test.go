@@ -1,6 +1,7 @@
 package storagememory
 
 import (
+	"context"
 	"reflect"
 	"sync"
 	"testing"
@@ -34,7 +35,7 @@ func Test_shortURLRepository_Add(t *testing.T) {
 			IsDeleted: false,
 		}
 
-		if err := s.Add(shortURL); err != nil {
+		if err := s.Add(context.Background(), shortURL); err != nil {
 			t.Errorf("shortURLRepository.Add() error = %v", err)
 		}
 
@@ -66,7 +67,7 @@ func Test_shortURLRepository_GetByID(t *testing.T) {
 	}
 
 	t.Run("should success get by id", func(t *testing.T) {
-		got, got1 := s.GetByID("1")
+		got, got1 := s.GetByID(context.Background(), "1")
 		if !reflect.DeepEqual(got, storeMap["1"]) {
 			t.Errorf("shortURLRepository.GetByID() got = %v", got)
 		}
@@ -77,7 +78,7 @@ func Test_shortURLRepository_GetByID(t *testing.T) {
 	})
 
 	t.Run("should not found", func(t *testing.T) {
-		_, got1 := s.GetByID("3")
+		_, got1 := s.GetByID(context.Background(), "3")
 		if got1 != false {
 			t.Errorf("shortURLRepository.GetByID() got1 = %v", got1)
 		}
@@ -118,7 +119,7 @@ func Test_shortURLRepository_AllByUserID(t *testing.T) {
 	}
 
 	t.Run("should success return by user", func(t *testing.T) {
-		got, err := s.AllByUserID("1")
+		got, err := s.AllByUserID(context.Background(), "1")
 
 		if err != nil {
 			t.Errorf("shortURLRepository.AllByUserID() error = %v", err)
@@ -137,7 +138,7 @@ func Test_shortURLRepository_AllByUserID(t *testing.T) {
 	})
 
 	t.Run("should return empty slice", func(t *testing.T) {
-		got, err := s.AllByUserID("5")
+		got, err := s.AllByUserID(context.Background(), "5")
 
 		if err != nil {
 			t.Errorf("shortURLRepository.AllByUserID() error = %v", err)
@@ -161,8 +162,8 @@ func Test_shortURLRepository_AllByUserID(t *testing.T) {
 //			mutex: tt.fields.mutex,
 //		}
 //
-//		if err := s.CreateBatchWithContext(tt.args.in0, tt.args.shortURLs); (err != nil) != tt.wantErr {
-//			t.Errorf("shortURLRepository.CreateBatchWithContext() error = %v, wantErr %v", err, tt.wantErr)
+//		if err := s.CreateBatch(tt.args.in0, tt.args.shortURLs); (err != nil) != tt.wantErr {
+//			t.Errorf("shortURLRepository.CreateBatch() error = %v, wantErr %v", err, tt.wantErr)
 //		}
 //	})
 //}

@@ -3,8 +3,6 @@ package storagedatabase
 import (
 	"context"
 	"database/sql"
-	"time"
-
 	"github.com/shreyner/go-shortener/internal/repositories"
 	storeerrors "github.com/shreyner/go-shortener/internal/storage/store_errors"
 
@@ -26,7 +24,7 @@ type shortURLRepository struct {
 func NewShortURLStore(log *zap.Logger, db *sql.DB) (*shortURLRepository, error) {
 	insertStmt, err := db.Prepare("insert into short_url (id, url, user_id, correlation_id) values ($1, $2, $3, $4);")
 
-	if err != err {
+	if err != nil {
 		return nil, err
 	}
 
@@ -38,10 +36,7 @@ func NewShortURLStore(log *zap.Logger, db *sql.DB) (*shortURLRepository, error) 
 }
 
 // Add Добавить короткую ссылку в store
-func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *shortURLRepository) Add(ctx context.Context, shortURL *core.ShortURL) error {
 	result := s.db.QueryRowContext(
 		ctx,
 		`insert into short_url (id, url, user_id) values ($1, $2, $3) on conflict (url) do update set url=excluded.url returning id;`,
@@ -67,10 +62,7 @@ func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 }
 
 // GetByID Получить короткую ссылку по идентификатору
-func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *shortURLRepository) GetByID(ctx context.Context, id string) (*core.ShortURL, bool) {
 	var shortURL core.ShortURL
 
 	row := s.db.QueryRowContext(
@@ -91,10 +83,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 }
 
 // AllByUserID получить все ссылки по идентификатору пользователя
-func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *shortURLRepository) AllByUserID(ctx context.Context, id string) ([]*core.ShortURL, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
 		`select id, url, user_id from short_url where user_id = $1`,
@@ -126,9 +115,9 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	return shortURLs, nil
 }
 
-// CreateBatchWithContext Добавление ссылок пачкой
-func (s *shortURLRepository) CreateBatchWithContext(ctx context.Context, shortURLs *[]*core.ShortURL) error {
-	tx, err := s.db.Begin()
+// CreateBatch Добавление ссылок пачкой
+func (s *shortURLRepository) CreateBatch(ctx context.Context, shortURLs *[]*core.ShortURL) error {
+	tx, err := s.db.BeginTx(ctx, nil)
 
 	if err != nil {
 		return err
@@ -154,10 +143,7 @@ func (s *shortURLRepository) CreateBatchWithContext(ctx context.Context, shortUR
 }
 
 // DeleteURLsUserByIds Удаление пачкой коротких ссылок от имени пользователя
-func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *shortURLRepository) DeleteURLsUserByIds(ctx context.Context, userID string, ids []string) error {
 	s.log.Info("Was deleted", zap.String("userID", userID), zap.Strings("ids", ids))
 
 	_, err := s.db.ExecContext(

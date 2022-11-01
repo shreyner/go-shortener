@@ -33,17 +33,17 @@ type MyMockService struct {
 	mock.Mock
 }
 
-func (m *MyMockService) Create(id, url string) (*core.ShortURL, error) {
+func (m *MyMockService) Create(_ context.Context, id, url string) (*core.ShortURL, error) {
 	args := m.Called(id, url)
 	return args.Get(0).(*core.ShortURL), args.Error(1)
 }
 
-func (m *MyMockService) GetByID(key string) (*core.ShortURL, bool) {
+func (m *MyMockService) GetByID(_ context.Context, key string) (*core.ShortURL, bool) {
 	args := m.Called(key)
 	return args.Get(0).(*core.ShortURL), args.Bool(1)
 }
 
-func (m *MyMockService) AllByUser(id string) ([]*core.ShortURL, error) {
+func (m *MyMockService) AllByUser(_ context.Context, id string) ([]*core.ShortURL, error) {
 	args := m.Called(id)
 
 	shortURLs, ok := args.Get(0).([]*core.ShortURL)
@@ -54,7 +54,7 @@ func (m *MyMockService) AllByUser(id string) ([]*core.ShortURL, error) {
 	return shortURLs, args.Error(1)
 }
 
-func (m *MyMockService) CreateBatchWithContext(ctx context.Context, shortURLs *[]*core.ShortURL) error {
+func (m *MyMockService) CreateBatch(ctx context.Context, shortURLs *[]*core.ShortURL) error {
 	args := m.Called(ctx, shortURLs)
 	return args.Error(0)
 }

@@ -7,9 +7,9 @@ import (
 )
 
 type ShortURLRepository interface {
-	Add(shortedURL *core.ShortURL) error
-	GetByID(id string) (*core.ShortURL, bool)
-	AllByUserID(id string) ([]*core.ShortURL, error)
-	CreateBatchWithContext(ctx context.Context, shortURLs *[]*core.ShortURL) error
-	DeleteURLsUserByIds(userID string, ids []string) error
+	Add(ctx context.Context, shortedURL *core.ShortURL) error
+	GetByID(ctx context.Context, id string) (*core.ShortURL, bool)
+	AllByUserID(ctx context.Context, id string) ([]*core.ShortURL, error)
+	CreateBatch(ctx context.Context, shortURLs *[]*core.ShortURL) error
+	DeleteURLsUserByIds(ctx context.Context, userID string, ids []string) error
 }

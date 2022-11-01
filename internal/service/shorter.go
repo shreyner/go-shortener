@@ -22,11 +22,11 @@ func NewShorter(shorterRepository repositories.ShortURLRepository) *Shorter {
 	}
 }
 
-func (s *Shorter) Create(userID, url string) (*core.ShortURL, error) {
+func (s *Shorter) Create(ctx context.Context, userID, url string) (*core.ShortURL, error) {
 	id := generateURLID()
 	shortURL := &core.ShortURL{ID: id, URL: url, UserID: userID}
 
-	err := s.shorterRepository.Add(shortURL)
+	err := s.shorterRepository.Add(ctx, shortURL)
 
 	if err != nil {
 		return nil, err
@@ -35,24 +35,24 @@ func (s *Shorter) Create(userID, url string) (*core.ShortURL, error) {
 	return shortURL, nil
 }
 
-func (s *Shorter) CreateBatchWithContext(ctx context.Context, shortURLs *[]*core.ShortURL) error {
+func (s *Shorter) CreateBatch(ctx context.Context, shortURLs *[]*core.ShortURL) error {
 	for _, v := range *shortURLs {
 		v.ID = generateURLID()
 	}
 
-	if err := s.shorterRepository.CreateBatchWithContext(ctx, shortURLs); err != nil {
+	if err := s.shorterRepository.CreateBatch(ctx, shortURLs); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *Shorter) GetByID(id string) (*core.ShortURL, bool) {
-	return s.shorterRepository.GetByID(id)
+func (s *Shorter) GetByID(ctx context.Context, id string) (*core.ShortURL, bool) {
+	return s.shorterRepository.GetByID(ctx, id)
 }
 
-func (s *Shorter) AllByUser(id string) ([]*core.ShortURL, error) {
-	return s.shorterRepository.AllByUserID(id)
+func (s *Shorter) AllByUser(ctx context.Context, id string) ([]*core.ShortURL, error) {
+	return s.shorterRepository.AllByUserID(ctx, id)
 }
 
 func generateURLID() string {

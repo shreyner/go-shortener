@@ -29,10 +29,10 @@ var (
 )
 
 type ShortedService interface {
-	Create(userID, url string) (*core.ShortURL, error)
-	CreateBatchWithContext(ctx context.Context, shortURLs *[]*core.ShortURL) error
-	GetByID(key string) (*core.ShortURL, bool)
-	AllByUser(id string) ([]*core.ShortURL, error)
+	Create(ctx context.Context, userID, url string) (*core.ShortURL, error)
+	CreateBatch(ctx context.Context, shortURLs *[]*core.ShortURL) error
+	GetByID(ctx context.Context, key string) (*core.ShortURL, bool)
+	AllByUser(ctx context.Context, id string) ([]*core.ShortURL, error)
 }
 
 type ShortedHandler struct {
@@ -112,7 +112,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 
 	userID := middlewares.GetUserIDFromCtx(r.Context())
 
-	shortURL, err := sh.ShorterService.Create(userID, string(body))
+	shortURL, err := sh.ShorterService.Create(r.Context(), userID, string(body))
 
 	var shortURLCreateConflictError *sdb.ShortURLCreateConflictError
 
@@ -145,7 +145,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
 	shortCode := chi.URLParam(r, "id")
 
-	shortURL, ok := sh.ShorterService.GetByID(shortCode)
+	shortURL, ok := sh.ShorterService.GetByID(r.Context(), shortCode)
 
 	if !ok {
 		http.Error(wr, "Not Found", http.StatusNotFound)
@@ -266,7 +266,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := middlewares.GetUserIDFromCtx(r.Context())
-	shortURL, err := sh.ShorterService.Create(userID, shortedCreateDTO.URL)
+	shortURL, err := sh.ShorterService.Create(r.Context(), userID, shortedCreateDTO.URL)
 
 	// TODO: Отрефакторить и убрать дублирование кода
 	var shortURLCreateConflictError *sdb.ShortURLCreateConflictError
@@ -407,7 +407,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 		shoredURLs[i] = &core.ShortURL{UserID: userID, URL: v.OriginalURL, CorrelationID: v.CorrelationID}
 	}
 
-	if err = sh.ShorterService.CreateBatchWithContext(r.Context(), &shoredURLs); err != nil {
+	if err = sh.ShorterService.CreateBatch(r.Context(), &shoredURLs); err != nil {
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -450,7 +450,7 @@ type ShortedAllUserUResponseDTO struct {
 func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserIDFromCtx(r.Context())
 
-	content, err := sh.ShorterService.AllByUser(userID)
+	content, err := sh.ShorterService.AllByUser(r.Context(), userID)
 
 	if err != nil {
 		http.Error(wr, "error create response", http.StatusInternalServerError)

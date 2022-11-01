@@ -44,14 +44,14 @@ func NewShortURLStore(log *zap.Logger, fileStoragePath string) (*shortURLReposit
 }
 
 // Add Добавить короткую ссылку в store
-func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
+func (s *shortURLRepository) Add(_ context.Context, shortURL *core.ShortURL) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return s.encoder.Encode(&shortURL)
 }
 
 // GetByID Получить короткую ссылку по идентификатору
-func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
+func (s *shortURLRepository) GetByID(ctx context.Context, id string) (*core.ShortURL, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -83,7 +83,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 }
 
 // AllByUserID получить все ссылки по идентификатору пользователя
-func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
+func (s *shortURLRepository) AllByUserID(_ context.Context, id string) ([]*core.ShortURL, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -116,8 +116,8 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	return result, nil
 }
 
-// CreateBatchWithContext Добавление ссылок пачкой
-func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs *[]*core.ShortURL) error {
+// CreateBatch Добавление ссылок пачкой
+func (s *shortURLRepository) CreateBatch(_ context.Context, shortURLs *[]*core.ShortURL) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -130,6 +130,6 @@ func (s *shortURLRepository) Close() error {
 }
 
 // DeleteURLsUserByIds Удаление пачкой коротких ссылок от имени пользователя
-func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) error {
+func (s *shortURLRepository) DeleteURLsUserByIds(_ context.Context, userID string, ids []string) error {
 	return nil
 }
