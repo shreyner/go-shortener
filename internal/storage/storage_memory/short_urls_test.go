@@ -129,11 +129,11 @@ func Test_shortURLRepository_AllByUserID(t *testing.T) {
 		assert.Equal(t, 2, len(got))
 
 		if !reflect.DeepEqual(got[0], storeMap["1"]) {
-			t.Errorf("shortURLRepository.AllByUserID() = %v", got[0])
+			t.Errorf("shortURLRepository.AllByUserID() = %v with %v", got[0], storeMap["1"])
 		}
 
 		if !reflect.DeepEqual(got[1], storeMap["2"]) {
-			t.Errorf("shortURLRepository.AllByUserID() = %v", got[0])
+			t.Errorf("shortURLRepository.AllByUserID() = %v with %v", got[0], storeMap["1"])
 		}
 	})
 
