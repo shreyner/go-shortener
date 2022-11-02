@@ -417,9 +417,7 @@ func ExampleShortedHandler_APICreate() {
 	}
 
 	var result *ShortedResponseDTO
-	err = json.Unmarshal(bodyRaw, result)
-
-	if err != nil || result != nil {
+	if err = json.Unmarshal(bodyRaw, result); err != nil {
 		return
 	}
 
