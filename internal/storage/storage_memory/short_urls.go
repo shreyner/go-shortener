@@ -40,6 +40,10 @@ func (s *shortURLRepository) GetByID(_ context.Context, id string) (*core.ShortU
 	defer s.mutex.RUnlock()
 	shortURL, ok := s.store[id]
 
+	if !ok {
+		return nil, false
+	}
+
 	return shortURL, ok
 }
 
@@ -73,5 +77,15 @@ func (s *shortURLRepository) CreateBatch(_ context.Context, shortURLs *[]*core.S
 
 // DeleteURLsUserByIds Удаление пачкой коротких ссылок от имени пользователя
 func (s *shortURLRepository) DeleteURLsUserByIds(_ context.Context, userID string, ids []string) error {
+	for _, id := range ids {
+		shortURL, ok := s.store[id]
+
+		if !ok || shortURL.UserID != userID {
+			continue
+		}
+
+		shortURL.IsDeleted = true
+	}
+
 	return nil
 }

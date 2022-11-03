@@ -149,6 +149,59 @@ func Test_shortURLRepository_AllByUserID(t *testing.T) {
 	})
 }
 
+func Test_shortURLRepository_DeleteURLsUserByIds(t *testing.T) {
+	t.Run("should success delete URLs by ids", func(t *testing.T) {
+		storeMap := map[string]*core.ShortURL{
+			"1": {
+				ID:        "1",
+				URL:       "https://vk.com",
+				UserID:    "1",
+				IsDeleted: false,
+			},
+			"2": {
+				ID:        "2",
+				URL:       "https://vk.com/2",
+				UserID:    "1",
+				IsDeleted: false,
+			},
+			"3": {
+				ID:        "3",
+				URL:       "https://vk.com/3",
+				UserID:    "3",
+				IsDeleted: false,
+			},
+			"4": {
+				ID:        "4",
+				URL:       "https://vk.com/4",
+				UserID:    "4",
+				IsDeleted: false,
+			},
+		}
+
+		s := &shortURLRepository{
+			store: storeMap,
+			mutex: &sync.RWMutex{},
+		}
+
+		if err := s.DeleteURLsUserByIds(context.Background(), "1", []string{"1", "2", "3"}); err != nil {
+			t.Errorf("shortURLRepository.Add() error = %v", err)
+		}
+
+		if storeMap["1"].IsDeleted != true {
+			t.Errorf("shortURLRepository.DeleteURLsUserByIds() got = %v", storeMap["1"])
+		}
+		if storeMap["2"].IsDeleted != true {
+			t.Errorf("shortURLRepository.DeleteURLsUserByIds() got = %v", storeMap["2"])
+		}
+		if storeMap["3"].IsDeleted != false {
+			t.Errorf("shortURLRepository.DeleteURLsUserByIds() got = %v", storeMap["3"])
+		}
+		if storeMap["4"].IsDeleted != false {
+			t.Errorf("shortURLRepository.DeleteURLsUserByIds() got = %v", storeMap["4"])
+		}
+	})
+}
+
 //func Test_shortURLRepository_CreateBatchWithContext(t *testing.T) {
 //	storeMap := map[string]*core.ShortURL{}
 //
@@ -166,34 +219,4 @@ func Test_shortURLRepository_AllByUserID(t *testing.T) {
 //			t.Errorf("shortURLRepository.CreateBatch() error = %v, wantErr %v", err, tt.wantErr)
 //		}
 //	})
-//}
-
-//func Test_shortURLRepository_DeleteURLsUserByIds(t *testing.T) {
-//	type fields struct {
-//		store map[string]*core.ShortURL
-//		mutex *sync.RWMutex
-//	}
-//	type args struct {
-//		userID string
-//		ids    []string
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			s := &shortURLRepository{
-//				store: tt.fields.store,
-//				mutex: tt.fields.mutex,
-//			}
-//			if err := s.DeleteURLsUserByIds(tt.args.userID, tt.args.ids); (err != nil) != tt.wantErr {
-//				t.Errorf("shortURLRepository.DeleteURLsUserByIds() error = %v, wantErr %v", err, tt.wantErr)
-//			}
-//		})
-//	}
 //}
