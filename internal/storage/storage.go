@@ -70,7 +70,7 @@ func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*S
 		log.Info("Success connected database")
 
 		log.Info("Check and create database...")
-		if err := storeDB.CheckAndCreateSchema(); err != nil {
+		if err = storeDB.CheckAndCreateSchema(); err != nil {
 			return nil, fmt.Errorf("storage error when create schema in db: %w", err)
 		}
 		log.Info("Finish check or created...")

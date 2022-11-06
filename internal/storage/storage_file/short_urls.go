@@ -17,13 +17,12 @@ var (
 )
 
 type shortURLRepository struct {
-	log        *zap.Logger
-	pathToFile string
-	file       *os.File
 	decoder    *json.Decoder
 	encoder    *json.Encoder
-
-	mutex *sync.RWMutex
+	file       *os.File
+	mutex      *sync.RWMutex
+	log        *zap.Logger
+	pathToFile string
 }
 
 // NewShortURLStore create file store

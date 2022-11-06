@@ -41,8 +41,8 @@ type ShortedHandler struct {
 	log               *zap.Logger
 	ShorterService    ShortedService
 	ShorterRepository repositories.ShortURLRepository
-	baseURL           string
 	fansShortService  *fans.FansShortService
+	baseURL           string
 }
 
 // NewShortedHandler create instance
@@ -228,9 +228,9 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	acceptHeader := r.Header.Get("Accept")
 
 	if acceptHeader != "" {
-		crossAccepting, err := accept.Negotiate(acceptHeader, contentTypeJSON)
+		crossAccepting, errAccept := accept.Negotiate(acceptHeader, contentTypeJSON)
 
-		if err != nil {
+		if errAccept != nil {
 			http.Error(wr, "bad headers", http.StatusBadRequest)
 			return
 		}
@@ -264,12 +264,14 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	shortedCreateDTO := shortedCreateDTOPool.Get()
 	defer shortedCreateDTOPool.Put(shortedCreateDTO)
 
-	if err := json.Unmarshal(body, &shortedCreateDTO); err != nil {
+	err = json.Unmarshal(body, &shortedCreateDTO)
+	if err != nil {
 		http.Error(wr, "Error parse body", http.StatusInternalServerError)
 		return
 	}
 
-	if _, err := url.ParseRequestURI(shortedCreateDTO.URL); err != nil {
+	_, err = url.ParseRequestURI(shortedCreateDTO.URL)
+	if err != nil {
 		http.Error(wr, "Invalid url", http.StatusBadRequest)
 		return
 	}
@@ -285,9 +287,9 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 
 		responseCreateDTO := ShortedResponseDTO{Result: resultURL}
 
-		responseBody, err := json.Marshal(responseCreateDTO)
+		responseBody, errJsonMarshal := json.Marshal(responseCreateDTO)
 
-		if err != nil {
+		if errJsonMarshal != nil {
 			http.Error(wr, "error create response", http.StatusInternalServerError)
 			return
 		}
@@ -365,9 +367,9 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 	acceptHeader := r.Header.Get("Accept")
 
 	if acceptHeader != "" {
-		crossAccepting, err := accept.Negotiate(acceptHeader, contentTypeJSON)
+		crossAccepting, errAccept := accept.Negotiate(acceptHeader, contentTypeJSON)
 
-		if err != nil {
+		if errAccept != nil {
 			http.Error(wr, "bad headers", http.StatusBadRequest)
 			return
 		}
@@ -400,7 +402,8 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 
 	var shortedCreateBatchDTO []*ShortedCreateBatchDTO
 
-	if err := json.Unmarshal(body, &shortedCreateBatchDTO); err != nil {
+	err = json.Unmarshal(body, &shortedCreateBatchDTO)
+	if err != nil {
 		http.Error(wr, "Error parse body", http.StatusInternalServerError)
 		return
 	}
@@ -410,7 +413,8 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 	shoredURLs := make([]*core.ShortURL, len(shortedCreateBatchDTO))
 
 	for i, v := range shortedCreateBatchDTO {
-		if _, err := url.ParseRequestURI(v.OriginalURL); err != nil {
+		_, err = url.ParseRequestURI(v.OriginalURL)
+		if err != nil {
 			http.Error(wr, "Invalid url", http.StatusBadRequest)
 			return
 		}
@@ -519,9 +523,9 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 	acceptHeader := r.Header.Get("Accept")
 
 	if acceptHeader != "" {
-		crossAccepting, err := accept.Negotiate(acceptHeader, contentTypeJSON)
+		crossAccepting, errAccept := accept.Negotiate(acceptHeader, contentTypeJSON)
 
-		if err != nil {
+		if errAccept != nil {
 			http.Error(wr, "bad headers", http.StatusBadRequest)
 			return
 		}
