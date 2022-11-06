@@ -16,9 +16,9 @@ import (
 
 // Server http server
 type Server struct {
-	server http.Server
-	errors chan error
 	log    *zap.Logger
+	errors chan error
+	server http.Server
 }
 
 // NewServer create http transport
