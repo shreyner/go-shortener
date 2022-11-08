@@ -13,6 +13,7 @@ import (
 	"github.com/shreyner/go-shortener/internal/pkg/random"
 )
 
+// UserCtxKey uniq key for save user ID in context
 type UserCtxKey int
 
 const userCtxKey UserCtxKey = iota
