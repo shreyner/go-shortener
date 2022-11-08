@@ -13,7 +13,9 @@ import (
 	"github.com/shreyner/go-shortener/internal/pkg/random"
 )
 
-const userCtxKey = iota
+type UserCtxKey int
+
+const userCtxKey UserCtxKey = iota
 
 var (
 	lengthUserID  = 5

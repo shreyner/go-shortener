@@ -13,6 +13,7 @@ type gzlibWriter struct {
 	Writer io.Writer
 }
 
+// Write to body and compress
 func (w gzlibWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
