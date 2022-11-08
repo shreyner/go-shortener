@@ -9,6 +9,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/timewasted/go-accept-headers v0.0.0-20130320203746-c78f304b1b09
 	go.uber.org/zap v1.23.0
+	golang.org/x/exp v0.0.0-20221106115401-f9659909a136
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 )
 

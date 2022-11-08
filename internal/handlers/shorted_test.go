@@ -282,9 +282,7 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		ts := httptest.NewServer(r)
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, "application/xml", "{\"url\":\"https://ya.ru/\"}")
-		defer func(Body io.ReadCloser) {
-			_ = Body.Close()
-		}(resp.Body)
+		defer resp.Body.Close()
 
 		mockService.AssertNotCalled(t, "Create")
 		assert.Equal(t, http.StatusNotAcceptable, resp.StatusCode)
