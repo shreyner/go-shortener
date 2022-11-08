@@ -18,6 +18,7 @@ type shortURLRepository struct {
 	mutex *sync.RWMutex
 }
 
+// NewShortURLStore create memo store
 func NewShortURLStore() *shortURLRepository {
 	return &shortURLRepository{
 		store: map[string]*core.ShortURL{},

@@ -6,6 +6,7 @@ import (
 	"github.com/shreyner/go-shortener/internal/core"
 )
 
+// ShortURLRepository base contract for all repositories
 type ShortURLRepository interface {
 	Add(ctx context.Context, shortedURL *core.ShortURL) error
 	GetByID(ctx context.Context, id string) (*core.ShortURL, bool)

@@ -26,6 +26,7 @@ type shortURLRepository struct {
 	mutex *sync.RWMutex
 }
 
+// NewShortURLStore create file store
 func NewShortURLStore(log *zap.Logger, fileStoragePath string) (*shortURLRepository, error) {
 	file, err := os.OpenFile(fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 

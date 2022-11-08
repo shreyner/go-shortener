@@ -21,6 +21,7 @@ type shortURLRepository struct {
 	insertStmt *sql.Stmt
 }
 
+// NewShortURLStore create sql store
 func NewShortURLStore(log *zap.Logger, db *sql.DB) (*shortURLRepository, error) {
 	insertStmt, err := db.Prepare("insert into short_url (id, url, user_id, correlation_id) values ($1, $2, $3, $4);")
 

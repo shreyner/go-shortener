@@ -19,6 +19,7 @@ const (
 	RepositoryTypeMemory
 )
 
+// Storage base storage
 type Storage struct {
 	ShortURL repositories.ShortURLRepository
 
@@ -26,6 +27,7 @@ type Storage struct {
 	close func() error
 }
 
+// NewStorage create memo or file or sql store by params
 func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*Storage, error) {
 	var repositoryType int
 
@@ -104,10 +106,12 @@ func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*S
 
 }
 
+// PingContext check connection to store
 func (s *Storage) PingContext(ctx context.Context) error {
 	return s.ping(ctx)
 }
 
+// Close save data and close connection to store
 func (s *Storage) Close() error {
 	return s.close()
 }
