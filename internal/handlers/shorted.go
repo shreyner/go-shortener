@@ -287,9 +287,9 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 
 		responseCreateDTO := ShortedResponseDTO{Result: resultURL}
 
-		responseBody, errJsonMarshal := json.Marshal(responseCreateDTO)
+		responseBody, errJSONMarshal := json.Marshal(responseCreateDTO)
 
-		if errJsonMarshal != nil {
+		if errJSONMarshal != nil {
 			http.Error(wr, "error create response", http.StatusInternalServerError)
 			return
 		}
