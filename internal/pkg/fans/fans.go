@@ -2,8 +2,10 @@ package fans
 
 import (
 	"context"
-	"github.com/shreyner/go-shortener/internal/repositories"
+
 	"go.uber.org/zap"
+
+	"github.com/shreyner/go-shortener/internal/repositories"
 )
 
 type FanDeleteJob struct {

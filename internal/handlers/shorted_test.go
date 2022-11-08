@@ -5,9 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	service2 "github.com/shreyner/go-shortener/internal/service"
-	"github.com/shreyner/go-shortener/internal/storage"
-	"go.uber.org/zap"
 	"io"
 	"log"
 	"net/http"
@@ -19,8 +16,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/core"
+	service2 "github.com/shreyner/go-shortener/internal/service"
+	"github.com/shreyner/go-shortener/internal/storage"
 )
 
 // TODO: Проверять сообщения при плохих ответах
@@ -282,7 +282,9 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		ts := httptest.NewServer(r)
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, "application/xml", "{\"url\":\"https://ya.ru/\"}")
-		defer resp.Body.Close()
+		defer func(Body io.ReadCloser) {
+			_ = Body.Close()
+		}(resp.Body)
 
 		mockService.AssertNotCalled(t, "Create")
 		assert.Equal(t, http.StatusNotAcceptable, resp.StatusCode)

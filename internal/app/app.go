@@ -6,11 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/shreyner/go-shortener/internal/pkg/fans"
-
 	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/handlers"
+	"github.com/shreyner/go-shortener/internal/pkg/fans"
 	"github.com/shreyner/go-shortener/internal/server"
 	"github.com/shreyner/go-shortener/internal/service"
 	"github.com/shreyner/go-shortener/internal/storage"
