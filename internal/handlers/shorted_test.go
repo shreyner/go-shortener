@@ -290,6 +290,7 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 }
 
 func BenchmarkShortedHandler_APICreate(b *testing.B) {
+	b.ReportAllocs()
 	var indexRequest int64 = 0
 	memoRepository, _ := storage.NewStorage(
 		zap.NewNop(),
