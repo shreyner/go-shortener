@@ -15,6 +15,7 @@ import (
 	"github.com/shreyner/go-shortener/internal/storage"
 )
 
+// NewApp create shortener application and start http listen, db connection and waiting system signal for stop
 func NewApp(
 	log *zap.Logger,
 	serverAddress string,

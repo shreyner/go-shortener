@@ -4,11 +4,12 @@ package logger
 import (
 	"fmt"
 
-	"github.com/shreyner/go-shortener/internal/config"
 	"go.uber.org/zap"
+
+	"github.com/shreyner/go-shortener/internal/config"
 )
 
-// InitLogger create and init logger by app config
+// InitLogger create and init logger by config
 func InitLogger(cfg *config.Config) (*zap.Logger, error) {
 	cfgLog := zap.NewDevelopmentConfig()
 

@@ -1,5 +1,6 @@
 package core
 
+// ShortURL models for short urls
 type ShortURL struct {
 	ID            string `json:"id"`
 	URL           string `json:"url"`

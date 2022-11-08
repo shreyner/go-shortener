@@ -19,6 +19,7 @@ import (
 
 var cookieSecretKey = []byte("triy6n9rw3")
 
+// NewRouter init and create all handler on route
 func NewRouter(
 	log *zap.Logger,
 	baseURL string,
