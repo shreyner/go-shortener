@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	logStd "log"
 
 	"go.uber.org/zap"
@@ -11,7 +12,15 @@ import (
 	"github.com/shreyner/go-shortener/internal/pkg/logger"
 )
 
+var (
+	buildVersion = "N/A"
+	buildDate    = "N/A"
+	buildCommit  = "N/A"
+)
+
 func main() {
+	fmt.Printf("Build version: %v\nBuild date: %v\nBuild commit: %v\n", buildVersion, buildDate, buildCommit)
+
 	var cfg config.Config
 
 	if err := cfg.Parse(); err != nil {
