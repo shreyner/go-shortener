@@ -13,10 +13,11 @@ import (
 	storagememory "github.com/shreyner/go-shortener/internal/storage/storage_memory"
 )
 
+// Enum types with types connection to store
 const (
-	RepositoryTypeFile = iota
-	RepositoryTypeDataBase
-	RepositoryTypeMemory
+	RepositoryTypeFile     = iota // file store
+	RepositoryTypeDataBase        // sql store
+	RepositoryTypeMemory          // memo store
 )
 
 // Storage base storage

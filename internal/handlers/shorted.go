@@ -28,6 +28,7 @@ var (
 	contentTypeJSON = "application/json"
 )
 
+// ShortedService interface for service with business logic
 type ShortedService interface {
 	Create(ctx context.Context, userID, url string) (*core.ShortURL, error)
 	CreateBatch(ctx context.Context, shortURLs *[]*core.ShortURL) error
@@ -35,6 +36,7 @@ type ShortedService interface {
 	AllByUser(ctx context.Context, id string) ([]*core.ShortURL, error)
 }
 
+// ShortedHandler include handlers for shorteners handlers
 type ShortedHandler struct {
 	log               *zap.Logger
 	ShorterService    ShortedService
@@ -43,6 +45,7 @@ type ShortedHandler struct {
 	fansShortService  *fans.FansShortService
 }
 
+// NewShortedHandler create instance
 func NewShortedHandler(
 	log *zap.Logger,
 	baseURL string,
@@ -160,14 +163,17 @@ func (sh *ShortedHandler) Get(wr http.ResponseWriter, r *http.Request) {
 	http.Redirect(wr, r, shortURL.URL, http.StatusTemporaryRedirect)
 }
 
+// ShortedCreateDTO data transfer object for request
 type ShortedCreateDTO struct {
 	URL string `json:"url" example:"https://ya.ru"`
 }
 
+// ShortedCreateDTOPool pool dto for requests
 type ShortedCreateDTOPool struct {
 	pool.Pool[ShortedCreateDTO]
 }
 
+// Put return object to pool
 func (p *ShortedCreateDTOPool) Put(v *ShortedCreateDTO) {
 	v.URL = ""
 	p.Pool.Put(v)
@@ -175,14 +181,17 @@ func (p *ShortedCreateDTOPool) Put(v *ShortedCreateDTO) {
 
 var shortedCreateDTOPool = &ShortedCreateDTOPool{}
 
+// ShortedResponseDTO data transfer object for response
 type ShortedResponseDTO struct {
 	Result string `json:"result" example:"http://localhost:8080/Jndshf"`
 }
 
+// ShortedResponseDTOPool pool dto for requests
 type ShortedResponseDTOPool struct {
 	pool.Pool[ShortedResponseDTO]
 }
 
+// Put return object to pool
 func (p *ShortedResponseDTOPool) Put(v *ShortedResponseDTO) {
 	v.Result = ""
 	p.Pool.Put(v)
@@ -316,11 +325,13 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 	wr.Write(responseBody)
 }
 
+// ShortedCreateBatchDTO data transfer object for request
 type ShortedCreateBatchDTO struct {
 	CorrelationID string `json:"correlation_id" example:"1"`
 	OriginalURL   string `json:"original_url" example:"https://ya.ru"`
 }
 
+// ShortedResponseBatchDTO data transfer object for response
 type ShortedResponseBatchDTO struct {
 	CorrelationID string `json:"correlation_id" example:"1"`
 	ShortURL      string `json:"short_url" example:"http://localhost:8080/JfnfgyS"`
@@ -432,6 +443,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 	wr.Write(responseBody)
 }
 
+// ShortedAllUserUResponseDTO data transfer object for response
 type ShortedAllUserUResponseDTO struct {
 	ShortURL    string `json:"short_url" example:"http://localhost:8080/Sjfnwf"`
 	OriginalURL string `json:"original_url" example:"https://ya.ru"`

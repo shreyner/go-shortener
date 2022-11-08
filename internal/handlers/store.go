@@ -8,15 +8,18 @@ import (
 	"go.uber.org/zap"
 )
 
+// Storage contract for store with need check connection to db
 type Storage interface {
 	PingContext(ctx context.Context) error
 }
 
+// StoreHandler handler for health check to store
 type StoreHandler struct {
 	log   *zap.Logger
 	store Storage
 }
 
+// NewStoreHandler create handlers instance
 func NewStoreHandler(log *zap.Logger, store Storage) *StoreHandler {
 	return &StoreHandler{
 		log:   log,

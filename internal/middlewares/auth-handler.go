@@ -13,20 +13,20 @@ import (
 	"github.com/shreyner/go-shortener/internal/pkg/random"
 )
 
-type UserCtxKey int
-
-const userCtxKey UserCtxKey = iota
+const userCtxKey = iota
 
 var (
 	lengthUserID  = 5
 	authCookieKey = "auth"
 )
 
+// GetUserIDFromCtx return user ID from contect
 func GetUserIDFromCtx(ctx context.Context) string {
 	v, _ := ctx.Value(userCtxKey).(string)
 	return v
 }
 
+// AuthHandler for auth users and create if not found auth cookies
 func AuthHandler(log *zap.Logger, key []byte) func(next http.Handler) http.Handler {
 	sh := sha256.New()
 	sh.Write(key)
