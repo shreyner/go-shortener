@@ -2,7 +2,6 @@
 package main
 
 import (
-	"github.com/shreyner/go-shortener/cmd/staticlint/lint"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/multichecker"
 	"golang.org/x/tools/go/analysis/passes/asmdecl"
@@ -51,6 +50,8 @@ import (
 	"honnef.co/go/tools/simple"
 	"honnef.co/go/tools/staticcheck"
 	"honnef.co/go/tools/stylecheck"
+
+	"github.com/shreyner/go-shortener/cmd/staticlint/lint"
 )
 
 //nolint:funlen
