@@ -1,21 +1,28 @@
+// Package fans implementation fanOut/fanIn pattern for concurrent delete urls
 package fans
 
 import (
+	"context"
+
+	"go.uber.org/zap"
+
 	"github.com/shreyner/go-shortener/internal/repositories"
-	"log"
 )
 
+// FanDeleteJob job include all field for delete sortn URL
 type FanDeleteJob struct {
 	UserID string
 	URLIDs []string
 }
 
+// FansShortService business logic for delte urls
 type FansShortService struct {
 	inputCh           chan *FanDeleteJob
 	shorterRepository repositories.ShortURLRepository
 }
 
-func NewFansShortService(rep repositories.ShortURLRepository, workerCount int) *FansShortService {
+// NewFansShortService create worker for bachground works
+func NewFansShortService(log *zap.Logger, rep repositories.ShortURLRepository, workerCount int) *FansShortService {
 	inputCh := make(chan *FanDeleteJob)
 
 	fansShortService := FansShortService{
@@ -35,8 +42,8 @@ func NewFansShortService(rep repositories.ShortURLRepository, workerCount int) *
 
 	go func(outCh chan *FanDeleteJob) {
 		for job := range outCh {
-			if err := rep.DeleteURLsUserByIds(job.UserID, job.URLIDs); err != nil {
-				log.Println("error when delete urls for user", job.UserID, err)
+			if err := rep.DeleteURLsUserByIds(context.Background(), job.UserID, job.URLIDs); err != nil {
+				log.Error("error when delete urls for user", zap.String("userID", job.UserID), zap.Error(err))
 			}
 		}
 	}(outCh)
@@ -44,6 +51,7 @@ func NewFansShortService(rep repositories.ShortURLRepository, workerCount int) *
 	return &fansShortService
 }
 
+// Add new job in queue for delete
 func (s *FansShortService) Add(userID string, URLIDs []string) {
 	job := &FanDeleteJob{
 		UserID: userID,
@@ -53,6 +61,7 @@ func (s *FansShortService) Add(userID string, URLIDs []string) {
 	s.inputCh <- job
 }
 
+// Close queue and stop process
 func (s *FansShortService) Close() {
 	close(s.inputCh)
 }

@@ -3,14 +3,21 @@ package storagefile
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"os"
 	"sync"
 
+	"go.uber.org/zap"
+
 	"github.com/shreyner/go-shortener/internal/core"
+	"github.com/shreyner/go-shortener/internal/repositories"
+)
+
+var (
+	_ repositories.ShortURLRepository = (*shortURLRepository)(nil)
 )
 
 type shortURLRepository struct {
+	log        *zap.Logger
 	pathToFile string
 	file       *os.File
 	decoder    *json.Decoder
@@ -19,7 +26,8 @@ type shortURLRepository struct {
 	mutex *sync.RWMutex
 }
 
-func NewShortURLStore(fileStoragePath string) (*shortURLRepository, error) {
+// NewShortURLStore create file store
+func NewShortURLStore(log *zap.Logger, fileStoragePath string) (*shortURLRepository, error) {
 	file, err := os.OpenFile(fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 
 	if err != nil {
@@ -27,6 +35,7 @@ func NewShortURLStore(fileStoragePath string) (*shortURLRepository, error) {
 	}
 
 	return &shortURLRepository{
+		log:        log,
 		pathToFile: fileStoragePath,
 		mutex:      &sync.RWMutex{},
 		file:       file,
@@ -35,20 +44,22 @@ func NewShortURLStore(fileStoragePath string) (*shortURLRepository, error) {
 	}, nil
 }
 
-func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
+// Add Добавить короткую ссылку в store
+func (s *shortURLRepository) Add(_ context.Context, shortURL *core.ShortURL) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return s.encoder.Encode(&shortURL)
 }
 
-func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
+// GetByID Получить короткую ссылку по идентификатору
+func (s *shortURLRepository) GetByID(ctx context.Context, id string) (*core.ShortURL, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
 	file, err := os.OpenFile(s.pathToFile, os.O_RDONLY|os.O_CREATE, 0644)
 
 	if err != nil {
-		log.Printf("Error open file for read: %s", err)
+		s.log.Error("error open file for read", zap.Error(err))
 		return nil, false
 	}
 	defer file.Close()
@@ -60,7 +71,7 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 		err := decoder.Decode(&shortURL)
 
 		if err != nil {
-			log.Printf("Error read shorted json:%s\n", err)
+			s.log.Error("error read shorted json", zap.Error(err))
 			return nil, false
 		}
 
@@ -72,14 +83,15 @@ func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
 	return nil, false
 }
 
-func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
+// AllByUserID получить все ссылки по идентификатору пользователя
+func (s *shortURLRepository) AllByUserID(_ context.Context, id string) ([]*core.ShortURL, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
 	file, err := os.OpenFile(s.pathToFile, os.O_RDONLY|os.O_CREATE, 0644)
 
 	if err != nil {
-		log.Printf("Error open file for read: %s", err)
+		s.log.Error("error open file for read", zap.Error(err))
 		return nil, err
 	}
 	defer file.Close()
@@ -93,7 +105,7 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 		err := decoder.Decode(&shortURL)
 
 		if err != nil {
-			log.Printf("Error read shorted json:%s\n", err)
+			s.log.Error("error read shorted json", zap.Error(err))
 			return nil, err
 		}
 
@@ -105,17 +117,20 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	return result, nil
 }
 
-func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs *[]*core.ShortURL) error {
+// CreateBatch Добавление ссылок пачкой
+func (s *shortURLRepository) CreateBatch(_ context.Context, shortURLs *[]*core.ShortURL) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	return s.encoder.Encode(shortURLs)
 }
 
+// Close Метод для корректного закрытия store
 func (s *shortURLRepository) Close() error {
 	return s.file.Close()
 }
 
-func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) error {
+// DeleteURLsUserByIds Удаление пачкой коротких ссылок от имени пользователя
+func (s *shortURLRepository) DeleteURLsUserByIds(_ context.Context, userID string, ids []string) error {
 	return nil
 }

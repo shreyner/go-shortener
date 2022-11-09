@@ -13,12 +13,14 @@ import (
 	storagememory "github.com/shreyner/go-shortener/internal/storage/storage_memory"
 )
 
+// Enum types with types connection to store
 const (
-	RepositoryTypeFile = iota
-	RepositoryTypeDataBase
-	RepositoryTypeMemory
+	RepositoryTypeFile     = iota // file store
+	RepositoryTypeDataBase        // sql store
+	RepositoryTypeMemory          // memo store
 )
 
+// Storage base storage
 type Storage struct {
 	ShortURL repositories.ShortURLRepository
 
@@ -26,6 +28,7 @@ type Storage struct {
 	close func() error
 }
 
+// NewStorage create memo or file or sql store by params
 func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*Storage, error) {
 	var repositoryType int
 
@@ -39,7 +42,7 @@ func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*S
 
 	if repositoryType == RepositoryTypeFile {
 		log.Info("Init file storage")
-		shorterFileRepository, err := storagefile.NewShortURLStore(fileStoragePath)
+		shorterFileRepository, err := storagefile.NewShortURLStore(log, fileStoragePath)
 
 		if err != nil {
 			return nil, fmt.Errorf("storage error when initialize file: %w", err)
@@ -104,10 +107,12 @@ func NewStorage(log *zap.Logger, fileStoragePath string, dataBaseDSN string) (*S
 
 }
 
+// PingContext check connection to store
 func (s *Storage) PingContext(ctx context.Context) error {
 	return s.ping(ctx)
 }
 
+// Close save data and close connection to store
 func (s *Storage) Close() error {
 	return s.close()
 }

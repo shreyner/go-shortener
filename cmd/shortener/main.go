@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"go.uber.org/zap"
 	logStd "log"
+
+	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/app"
 	"github.com/shreyner/go-shortener/internal/config"

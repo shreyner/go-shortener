@@ -6,12 +6,14 @@ import (
 	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/hex"
-	"log"
 	"net/http"
+
+	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/pkg/random"
 )
 
+// UserCtxKey uniq key for save user ID in context
 type UserCtxKey int
 
 const userCtxKey UserCtxKey = iota
@@ -21,12 +23,14 @@ var (
 	authCookieKey = "auth"
 )
 
+// GetUserIDFromCtx return user ID from contect
 func GetUserIDFromCtx(ctx context.Context) string {
 	v, _ := ctx.Value(userCtxKey).(string)
 	return v
 }
 
-func AuthHandler(key []byte) func(next http.Handler) http.Handler {
+// AuthHandler for auth users and create if not found auth cookies
+func AuthHandler(log *zap.Logger, key []byte) func(next http.Handler) http.Handler {
 	sh := sha256.New()
 	sh.Write(key)
 
@@ -35,14 +39,14 @@ func AuthHandler(key []byte) func(next http.Handler) http.Handler {
 	aesBlock, err := aes.NewCipher(keyHash)
 	if err != nil {
 		// TODO: Убрать Fatalln. Обычный error. Сделать выбрасывание http ошибки
-		log.Fatalln(err)
+		log.Fatal("error", zap.Error(err))
 	}
 
 	aesGCM, err := cipher.NewGCM(aesBlock)
 	if err != nil {
 		// TODO: Убрать Fatalln. Обычный error. Сделать выбрасывание http ошибки
 		// TODO: Пробежаться и посомтреть по коду
-		log.Fatalln(err)
+		log.Fatal("error", zap.Error(err))
 	}
 
 	nonce := keyHash[len(keyHash)-aesGCM.NonceSize():]

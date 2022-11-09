@@ -5,25 +5,25 @@ import (
 	"database/sql"
 )
 
-type StorageSQL interface {
-	PingContext(ctx context.Context) error
-}
-
-type storageSQL struct {
+// StorageSQL sql storage include db connection
+type StorageSQL struct {
 	DB *sql.DB
 }
 
-func NewStorageSQL(db *sql.DB) *storageSQL {
-	return &storageSQL{
+// NewStorageSQL create sql store by db connection
+func NewStorageSQL(db *sql.DB) *StorageSQL {
+	return &StorageSQL{
 		DB: db,
 	}
 }
 
-func (s *storageSQL) PingContext(ctx context.Context) error {
+// PingContext check connection to db
+func (s *StorageSQL) PingContext(ctx context.Context) error {
 	return s.DB.PingContext(ctx)
 }
 
-func (s *storageSQL) Close() error {
+// Close connection to db
+func (s *StorageSQL) Close() error {
 	err := s.DB.Close()
 
 	return err

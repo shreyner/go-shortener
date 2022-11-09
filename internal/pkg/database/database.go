@@ -1,3 +1,4 @@
+// Package database create connection and check connection on error
 package database
 
 import (
@@ -9,6 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// NewDataBase returning sql.DB witch active connection or error if was error to connection
 func NewDataBase(log *zap.Logger, dburi string) (*sql.DB, error) {
 	db, err := sql.Open("pgx", dburi)
 

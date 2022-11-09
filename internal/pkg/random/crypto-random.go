@@ -1,3 +1,4 @@
+// Package random include helpers for generate random strings by length string
 package random
 
 import (
@@ -5,17 +6,7 @@ import (
 	"math/big"
 )
 
-func CryptoGenerateRandom(size int) ([]byte, error) {
-	b := make([]byte, size)
-
-	if _, err := rand.Read(b); err != nil {
-		return nil, err
-	}
-
-	return b, nil
-}
-
-func CryptoRandomInt(min, max int) (int, error) {
+func cryptoRandomInt(min, max int) (int, error) {
 	bg := big.NewInt(int64(max - min + 1))
 
 	n, err := rand.Int(rand.Reader, bg)
@@ -27,12 +18,14 @@ func CryptoRandomInt(min, max int) (int, error) {
 	return int(n.Int64()) + min, nil
 }
 
+// letters include all characters by generate
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
+// RandSeq random string by based letters
 func RandSeq(n int) string {
 	b := make([]rune, n)
 	for i := range b {
-		rn, err := CryptoRandomInt(0, len(letters)-1)
+		rn, err := cryptoRandomInt(0, len(letters)-1)
 
 		if err != nil {
 			panic(err)

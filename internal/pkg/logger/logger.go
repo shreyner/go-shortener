@@ -1,13 +1,19 @@
+// Package logger create and init zap logger
 package logger
 
 import (
 	"fmt"
-	"github.com/shreyner/go-shortener/internal/config"
+
 	"go.uber.org/zap"
+
+	"github.com/shreyner/go-shortener/internal/config"
 )
 
+// InitLogger create and init logger by config
 func InitLogger(cfg *config.Config) (*zap.Logger, error) {
 	cfgLog := zap.NewDevelopmentConfig()
+
+	//cfgLog.Level = zap.NewAtomicLevelAt(zap.ErrorLevel)
 
 	cfgLog.DisableStacktrace = true
 

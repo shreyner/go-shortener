@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"github.com/shreyner/go-shortener/internal/pkg/fans"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,11 +9,13 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/handlers"
+	"github.com/shreyner/go-shortener/internal/pkg/fans"
 	"github.com/shreyner/go-shortener/internal/server"
 	"github.com/shreyner/go-shortener/internal/service"
 	"github.com/shreyner/go-shortener/internal/storage"
 )
 
+// NewApp create shortener application and start http listen, db connection and waiting system signal for stop
 func NewApp(
 	log *zap.Logger,
 	serverAddress string,
@@ -37,7 +38,7 @@ func NewApp(
 
 	services := service.NewService(store.ShortURL)
 
-	fansShortService := fans.NewFansShortService(store.ShortURL, 4)
+	fansShortService := fans.NewFansShortService(log, store.ShortURL, 4)
 
 	r := handlers.NewRouter(log, baseURL, services.ShorterService, store.ShortURL, store, fansShortService)
 	serv := server.NewServer(log, serverAddress, r)

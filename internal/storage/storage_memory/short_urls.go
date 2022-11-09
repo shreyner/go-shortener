@@ -1,9 +1,16 @@
+// Package storagememory хранилище в памяти
 package storagememory
 
 import (
 	"context"
-	"github.com/shreyner/go-shortener/internal/core"
 	"sync"
+
+	"github.com/shreyner/go-shortener/internal/core"
+	"github.com/shreyner/go-shortener/internal/repositories"
+)
+
+var (
+	_ repositories.ShortURLRepository = (*shortURLRepository)(nil)
 )
 
 type shortURLRepository struct {
@@ -11,6 +18,7 @@ type shortURLRepository struct {
 	mutex *sync.RWMutex
 }
 
+// NewShortURLStore create memo store
 func NewShortURLStore() *shortURLRepository {
 	return &shortURLRepository{
 		store: map[string]*core.ShortURL{},
@@ -18,7 +26,8 @@ func NewShortURLStore() *shortURLRepository {
 	}
 }
 
-func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
+// Add Добавить короткую ссылку в store
+func (s *shortURLRepository) Add(_ context.Context, shortURL *core.ShortURL) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.store[shortURL.ID] = shortURL
@@ -26,15 +35,21 @@ func (s *shortURLRepository) Add(shortURL *core.ShortURL) error {
 	return nil
 }
 
-func (s *shortURLRepository) GetByID(id string) (*core.ShortURL, bool) {
+// GetByID Получить короткую ссылку по идентификатору
+func (s *shortURLRepository) GetByID(_ context.Context, id string) (*core.ShortURL, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	shortURL, ok := s.store[id]
 
+	if !ok {
+		return nil, false
+	}
+
 	return shortURL, ok
 }
 
-func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
+// AllByUserID получить все ссылки по идентификатору пользователя
+func (s *shortURLRepository) AllByUserID(_ context.Context, id string) ([]*core.ShortURL, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -49,7 +64,8 @@ func (s *shortURLRepository) AllByUserID(id string) ([]*core.ShortURL, error) {
 	return result, nil
 }
 
-func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs *[]*core.ShortURL) error {
+// CreateBatch Добавление ссылок пачкой
+func (s *shortURLRepository) CreateBatch(_ context.Context, shortURLs *[]*core.ShortURL) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -60,6 +76,17 @@ func (s *shortURLRepository) CreateBatchWithContext(_ context.Context, shortURLs
 	return nil
 }
 
-func (s *shortURLRepository) DeleteURLsUserByIds(userID string, ids []string) error {
+// DeleteURLsUserByIds Удаление пачкой коротких ссылок от имени пользователя
+func (s *shortURLRepository) DeleteURLsUserByIds(_ context.Context, userID string, ids []string) error {
+	for _, id := range ids {
+		shortURL, ok := s.store[id]
+
+		if !ok || shortURL.UserID != userID {
+			continue
+		}
+
+		shortURL.IsDeleted = true
+	}
+
 	return nil
 }
