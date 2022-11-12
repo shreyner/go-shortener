@@ -22,6 +22,7 @@ func NewApp(
 	baseURL string,
 	fileStoragePath string,
 	dataBaseDSN string,
+	enabledHTTS bool,
 ) {
 	log.Info("Start app...")
 
@@ -43,7 +44,7 @@ func NewApp(
 	r := handlers.NewRouter(log, baseURL, services.ShorterService, store.ShortURL, store, fansShortService)
 	serv := server.NewServer(log, serverAddress, r)
 
-	serv.Start()
+	serv.Start(enabledHTTS)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
