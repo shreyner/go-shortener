@@ -38,6 +38,7 @@ func main() {
 	baseURL := flag.String("b", cfg.BaseURL, "Базовый адрес")
 	fileStoragePath := flag.String("f", cfg.FileStoragePath, "Путь до папки с хранением данных")
 	dataBaseDSN := flag.String("d", cfg.DataBaseDSN, "Конфиг подключения к db")
+	enabledHTTS := flag.Bool("s", cfg.EnabledHTTPS, "HTTPS соединение")
 
 	flag.Parse()
 
@@ -49,6 +50,7 @@ func main() {
 		zap.Stringp("baseURL", baseURL),
 		zap.Stringp("fileStoragePath", fileStoragePath),
 		zap.Stringp("dataBaseDSN", dataBaseDSN),
+		zap.Boolp("enabledHTTS", enabledHTTS),
 	)
 
 	app.NewApp(
@@ -57,5 +59,6 @@ func main() {
 		*baseURL,
 		*fileStoragePath,
 		*dataBaseDSN,
+		*enabledHTTS,
 	)
 }

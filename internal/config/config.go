@@ -17,6 +17,7 @@ type Config struct {
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 	DataBaseDSN     string `env:"DATABASE_DSN"`
+	EnabledHTTPS    bool   `env:"ENABLE_HTTPS"`
 }
 
 // Parse will start parsing env variable and willed config
