@@ -32,8 +32,6 @@ func NewApp(
 		return
 	}
 
-	defer store.Close()
-
 	services := service.NewService(store.ShortURL)
 
 	fansShortService := fans.NewFansShortService(log, store.ShortURL, 4)
@@ -44,7 +42,7 @@ func NewApp(
 	serv.Start(cfg.EnabledHTTPS)
 
 	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
 	select {
 	case x := <-interrupt:
@@ -60,6 +58,10 @@ func NewApp(
 	}
 
 	fansShortService.Close()
+
+	if err := store.Close(); err != nil {
+		log.Error("error close connection to store", zap.Error(err))
+	}
 
 	log.Info("The app is calling the last defers and will be stopped.")
 }
