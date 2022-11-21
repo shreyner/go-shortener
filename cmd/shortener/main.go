@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	logStd "log"
 
@@ -34,31 +33,17 @@ func main() {
 	}
 	defer log.Sync()
 
-	serverAddress := flag.String("a", cfg.ServerAddress, "Адрес сервера")
-	baseURL := flag.String("b", cfg.BaseURL, "Базовый адрес")
-	fileStoragePath := flag.String("f", cfg.FileStoragePath, "Путь до папки с хранением данных")
-	dataBaseDSN := flag.String("d", cfg.DataBaseDSN, "Конфиг подключения к db")
-	enabledHTTS := flag.Bool("s", cfg.EnabledHTTPS, "HTTPS соединение")
-
-	flag.Parse()
-
 	log.Info("Finished flags env")
 
 	log.Info(
 		"Start with params",
-		zap.Stringp("serverAddress", serverAddress),
-		zap.Stringp("baseURL", baseURL),
-		zap.Stringp("fileStoragePath", fileStoragePath),
-		zap.Stringp("dataBaseDSN", dataBaseDSN),
-		zap.Boolp("enabledHTTS", enabledHTTS),
+		zap.String("serverAddress", cfg.ServerAddress),
+		zap.String("baseURL", cfg.BaseURL),
+		zap.String("fileStoragePath", cfg.FileStoragePath),
+		zap.String("dataBaseDSN", cfg.DataBaseDSN),
+		zap.Bool("enabledHTTS", cfg.EnabledHTTPS),
+		zap.String("config", cfg.Config),
 	)
 
-	app.NewApp(
-		log,
-		*serverAddress,
-		*baseURL,
-		*fileStoragePath,
-		*dataBaseDSN,
-		*enabledHTTS,
-	)
+	app.NewApp(log, &cfg)
 }
