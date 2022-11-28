@@ -9,22 +9,25 @@ import (
 	"go.uber.org/zap"
 )
 
-type InternalRepository interface {
+type internalRepository interface {
 	GetStats(ctx context.Context) (*core.ShortStats, error)
 }
 
+// InternalHandler with internal handlers
 type InternalHandler struct {
 	log        *zap.Logger
-	repository InternalRepository
+	repository internalRepository
 }
 
-func NewInternalHandler(log *zap.Logger, repository InternalRepository) *InternalHandler {
+// NewInternalHandler create struct InternalHandler
+func NewInternalHandler(log *zap.Logger, repository internalRepository) *InternalHandler {
 	return &InternalHandler{
 		log:        log,
 		repository: repository,
 	}
 }
 
+// GetStats handler stats endpoint
 func (i *InternalHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

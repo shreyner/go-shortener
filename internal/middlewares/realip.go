@@ -17,6 +17,10 @@ var (
 	xReadIP       = http.CanonicalHeaderKey("X-Read-IP")
 )
 
+// GetRealIPCtx return ip from request struct
+//
+//	realIP := GetRealIPCtx(r.Context())
+//	if realIP == nil {
 func GetRealIPCtx(ctx context.Context) net.IP {
 	v, _ := ctx.Value(realIPCtxKey).(net.IP)
 
@@ -27,6 +31,7 @@ func setReadIPCtx(ctx context.Context, ip net.IP) context.Context {
 	return context.WithValue(ctx, realIPCtxKey, ip)
 }
 
+// RealIP middleware for get access to real ip
 func RealIP(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -39,6 +44,7 @@ func RealIP(next http.Handler) http.Handler {
 	})
 }
 
+// CIDRAccess middleware filters real ip by 192.168.0.1/24 ip CIDR
 func CIDRAccess(CIDRs string) (func(http.Handler) http.Handler, error) {
 	var ipNet *net.IPNet
 

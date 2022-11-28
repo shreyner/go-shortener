@@ -9,6 +9,7 @@ type ShortURL struct {
 	IsDeleted     bool   `json:"isDeleted"`
 }
 
+// ShortStats models with stats service
 type ShortStats struct {
 	URLs  int `json:"urls"`
 	Users int `json:"users"`

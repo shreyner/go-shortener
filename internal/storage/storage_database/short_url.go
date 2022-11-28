@@ -157,6 +157,7 @@ func (s *shortURLRepository) DeleteURLsUserByIds(ctx context.Context, userID str
 	return err
 }
 
+// GetStats return stats
 func (s *shortURLRepository) GetStats(ctx context.Context) (*core.ShortStats, error) {
 	rowURLCount := s.db.QueryRowContext(ctx, `select count(*) from short_url;`)
 

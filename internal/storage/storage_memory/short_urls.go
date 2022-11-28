@@ -94,6 +94,7 @@ func (s *shortURLRepository) DeleteURLsUserByIds(_ context.Context, userID strin
 	return nil
 }
 
+// GetStats return stats
 func (s *shortURLRepository) GetStats(_ context.Context) (*core.ShortStats, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
