@@ -3,11 +3,11 @@ package handlers
 import (
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/shreyner/go-shortener/internal/pkg/fans"
-	"github.com/shreyner/go-shortener/internal/repositories"
 	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/middlewares"
+	"github.com/shreyner/go-shortener/internal/pkg/fans"
+	"github.com/shreyner/go-shortener/internal/repositories"
 	"github.com/shreyner/go-shortener/internal/storage"
 )
 
@@ -27,6 +27,7 @@ func NewRouter(
 	shortURIRepository repositories.ShortURLRepository,
 	storage *storage.Storage,
 	fansShortService *fans.FansShortService,
+	trustedSubnet string,
 ) *chi.Mux {
 	r := chi.NewRouter()
 
@@ -36,9 +37,12 @@ func NewRouter(
 	r.Use(chiMiddleware.Recoverer)
 
 	authMiddleware := middlewares.AuthHandler(log, cookieSecretKey)
+	realIPMiddleware := middlewares.RealIP
+	cidrAccessMiddleware, _ := middlewares.CIDRAccess(trustedSubnet) // 192.168.88.0/24,127.0.0.1/32
 
 	shortedHandler := NewShortedHandler(log, baseURL, shorterService, shortURIRepository, fansShortService)
 	storeHandler := NewStoreHandler(log, storage)
+	internalHandler := NewInternalHandler(log, shortURIRepository)
 
 	r.Route("/api", func(r chi.Router) {
 		r.With(authMiddleware).Route("/shorten", func(r chi.Router) {
@@ -58,6 +62,10 @@ func NewRouter(
 				r.Delete("/", shortedHandler.APIUserDeleteURLs)
 			})
 		})
+
+		r.With(realIPMiddleware, cidrAccessMiddleware).Route("/internal", func(r chi.Router) {
+			r.Get("/stats", internalHandler.GetStats)
+		})
 	})
 
 	r.With(
@@ -67,9 +75,9 @@ func NewRouter(
 	).
 		Post("/", shortedHandler.Create)
 
-	r.Get("/{id}", shortedHandler.Get)
-
 	r.Get("/ping", storeHandler.Ping)
+
+	r.Get("/{id}", shortedHandler.Get)
 
 	//r.Mount("/debug", chiMiddleware.Profiler())
 

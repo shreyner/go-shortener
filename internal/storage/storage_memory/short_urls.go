@@ -78,6 +78,9 @@ func (s *shortURLRepository) CreateBatch(_ context.Context, shortURLs *[]*core.S
 
 // DeleteURLsUserByIds Удаление пачкой коротких ссылок от имени пользователя
 func (s *shortURLRepository) DeleteURLsUserByIds(_ context.Context, userID string, ids []string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	for _, id := range ids {
 		shortURL, ok := s.store[id]
 
@@ -89,4 +92,24 @@ func (s *shortURLRepository) DeleteURLsUserByIds(_ context.Context, userID strin
 	}
 
 	return nil
+}
+
+func (s *shortURLRepository) GetStats(_ context.Context) (*core.ShortStats, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	setUsers := make(map[string]byte)
+
+	for _, url := range s.store {
+		if _, ok := setUsers[url.UserID]; !ok {
+			setUsers[url.UserID] = 1
+		}
+	}
+
+	shortStats := core.ShortStats{
+		URLs:  len(s.store),
+		Users: len(setUsers),
+	}
+
+	return &shortStats, nil
 }

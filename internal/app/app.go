@@ -36,7 +36,15 @@ func NewApp(
 
 	fansShortService := fans.NewFansShortService(log, store.ShortURL, 4)
 
-	r := handlers.NewRouter(log, cfg.BaseURL, services.ShorterService, store.ShortURL, store, fansShortService)
+	r := handlers.NewRouter(
+		log,
+		cfg.BaseURL,
+		services.ShorterService,
+		store.ShortURL,
+		store,
+		fansShortService,
+		cfg.TrustedSubnet,
+	)
 	serv := server.NewServer(log, cfg.ServerAddress, r)
 
 	serv.Start(cfg.EnabledHTTPS)

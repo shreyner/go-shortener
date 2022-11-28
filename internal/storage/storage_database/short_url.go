@@ -156,3 +156,36 @@ func (s *shortURLRepository) DeleteURLsUserByIds(ctx context.Context, userID str
 
 	return err
 }
+
+func (s *shortURLRepository) GetStats(ctx context.Context) (*core.ShortStats, error) {
+	rowURLCount := s.db.QueryRowContext(ctx, `select count(*) from short_url;`)
+
+	if rowURLCount.Err() != nil {
+		return nil, rowURLCount.Err()
+	}
+
+	URLsCount := 0
+
+	if err := rowURLCount.Scan(&URLsCount); err != nil {
+		return nil, err
+	}
+
+	rowUserCount := s.db.QueryRowContext(ctx, `select count(distinct(user_id)) from short_url;`)
+
+	if rowUserCount.Err() != nil {
+		return nil, rowUserCount.Err()
+	}
+
+	usersCount := 0
+
+	if err := rowUserCount.Scan(&usersCount); err != nil {
+		return nil, err
+	}
+
+	shortStats := core.ShortStats{
+		URLs:  URLsCount,
+		Users: usersCount,
+	}
+
+	return &shortStats, nil
+}

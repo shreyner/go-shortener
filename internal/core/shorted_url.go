@@ -8,3 +8,8 @@ type ShortURL struct {
 	CorrelationID string `json:"correlation_id,omitempty"`
 	IsDeleted     bool   `json:"isDeleted"`
 }
+
+type ShortStats struct {
+	URLs  int `json:"urls"`
+	Users int `json:"users"`
+}

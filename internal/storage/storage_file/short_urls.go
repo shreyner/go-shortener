@@ -133,3 +133,7 @@ func (s *shortURLRepository) Close() error {
 func (s *shortURLRepository) DeleteURLsUserByIds(_ context.Context, userID string, ids []string) error {
 	return nil
 }
+
+func (s *shortURLRepository) GetStats(_ context.Context) (*core.ShortStats, error) {
+	return &core.ShortStats{}, nil
+}

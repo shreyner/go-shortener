@@ -26,6 +26,7 @@ type Config struct {
 	FileStoragePath string `json:"file_storage_path" env:"FILE_STORAGE_PATH"`
 	DataBaseDSN     string `json:"database_dsn" env:"DATABASE_DSN"`
 	Config          string `json:"-" env:"CONFIG"`
+	TrustedSubnet   string `json:"trusted_subnet"`
 	EnabledHTTPS    bool   `json:"enable_https" env:"ENABLE_HTTPS"`
 }
 
@@ -41,6 +42,7 @@ func (c *Config) Parse() error {
 	flag.StringVar(&c.FileStoragePath, "f", c.FileStoragePath, "Путь до папки с хранением данных")
 	flag.StringVar(&c.DataBaseDSN, "d", c.DataBaseDSN, "Конфиг подключения к db")
 	flag.BoolVar(&c.EnabledHTTPS, "s", c.EnabledHTTPS, "HTTPS соединение")
+	flag.StringVar(&c.TrustedSubnet, "t", c.TrustedSubnet, "CIDR для доступа к /internal")
 
 	flag.Parse()
 
@@ -96,6 +98,10 @@ func (c *Config) ParseConfigFile(name string) error {
 
 	if c.BaseURL == "http://localhost:8080" && configJSON.BaseURL != "" {
 		c.BaseURL = configJSON.BaseURL
+	}
+
+	if c.TrustedSubnet == "" && configJSON.TrustedSubnet != "" {
+		c.TrustedSubnet = configJSON.TrustedSubnet
 	}
 
 	return nil
