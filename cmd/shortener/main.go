@@ -43,6 +43,7 @@ func main() {
 		zap.String("dataBaseDSN", cfg.DataBaseDSN),
 		zap.Bool("enabledHTTS", cfg.EnabledHTTPS),
 		zap.String("config", cfg.Config),
+		zap.String("trusted_subnet", cfg.TrustedSubnet),
 	)
 
 	app.NewApp(log, &cfg)
