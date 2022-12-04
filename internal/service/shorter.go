@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/shreyner/go-shortener/internal/core"
 	rand "github.com/shreyner/go-shortener/internal/pkg/random"
@@ -27,7 +28,10 @@ func NewShorter(shorterRepository repositories.ShortURLRepository) *Shorter {
 // Create new short url by user
 func (s *Shorter) Create(ctx context.Context, userID, url string) (*core.ShortURL, error) {
 	id := generateURLID()
-	shortURL := &core.ShortURL{ID: id, URL: url, UserID: userID}
+	shortURL := &core.ShortURL{ID: id, URL: url, UserID: sql.NullString{
+		String: userID,
+		Valid:  true,
+	}}
 
 	err := s.shorterRepository.Add(ctx, shortURL)
 

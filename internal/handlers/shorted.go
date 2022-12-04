@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -113,7 +114,7 @@ func (sh *ShortedHandler) Create(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := middlewares.GetUserIDFromCtx(r.Context())
+	userID, _ := middlewares.GetUserIDCtx(r.Context())
 
 	shortURL, err := sh.ShorterService.Create(r.Context(), userID, string(body))
 
@@ -276,7 +277,7 @@ func (sh *ShortedHandler) APICreate(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := middlewares.GetUserIDFromCtx(r.Context())
+	userID, _ := middlewares.GetUserIDCtx(r.Context())
 	shortURL, err := sh.ShorterService.Create(r.Context(), userID, shortedCreateDTO.URL)
 
 	// TODO: Отрефакторить и убрать дублирование кода
@@ -408,7 +409,7 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userID := middlewares.GetUserIDFromCtx(r.Context())
+	userID, _ := middlewares.GetUserIDCtx(r.Context())
 
 	shoredURLs := make([]*core.ShortURL, len(shortedCreateBatchDTO))
 
@@ -419,7 +420,14 @@ func (sh *ShortedHandler) APICreateBatch(wr http.ResponseWriter, r *http.Request
 			return
 		}
 
-		shoredURLs[i] = &core.ShortURL{UserID: userID, URL: v.OriginalURL, CorrelationID: v.CorrelationID}
+		shoredURLs[i] = &core.ShortURL{
+			UserID: sql.NullString{
+				String: userID,
+				Valid:  userID != "",
+			},
+			URL:           v.OriginalURL,
+			CorrelationID: v.CorrelationID,
+		}
 	}
 
 	if err = sh.ShorterService.CreateBatch(r.Context(), &shoredURLs); err != nil {
@@ -464,7 +472,7 @@ type ShortedAllUserUResponseDTO struct {
 //	@failure 500
 //	@router  /api/user/urls [get]
 func (sh *ShortedHandler) APIUserURLs(wr http.ResponseWriter, r *http.Request) {
-	userID := middlewares.GetUserIDFromCtx(r.Context())
+	userID, _ := middlewares.GetUserIDCtx(r.Context())
 
 	content, err := sh.ShorterService.AllByUser(r.Context(), userID)
 
@@ -564,7 +572,7 @@ func (sh *ShortedHandler) APIUserDeleteURLs(wr http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	userID := middlewares.GetUserIDFromCtx(r.Context())
+	userID, _ := middlewares.GetUserIDCtx(r.Context())
 
 	sh.log.Info("was delete", zap.String("userID", userID), zap.Strings("urlIDs", urlIDs))
 

@@ -2,7 +2,7 @@
 //
 // For example create:
 //
-//	serv := server.NewServer(log, serverAddress, r)
+//	serv := server.NewHTTPServer(log, serverAddress, r)
 //	serv.Start()
 //	serv.Stop()
 package server
@@ -23,16 +23,16 @@ import (
 	"go.uber.org/zap"
 )
 
-// Server http server
-type Server struct {
+// HTTPServer http server
+type HTTPServer struct {
 	log    *zap.Logger
 	errors chan error
 	server http.Server
 }
 
-// NewServer create http transport
-func NewServer(log *zap.Logger, address string, router http.Handler) *Server {
-	return &Server{
+// NewHTTPServer create http transport
+func NewHTTPServer(log *zap.Logger, address string, router http.Handler) *HTTPServer {
+	return &HTTPServer{
 		server: http.Server{
 			Addr:    address,
 			Handler: router,
@@ -43,9 +43,9 @@ func NewServer(log *zap.Logger, address string, router http.Handler) *Server {
 }
 
 // Start http server and listening port
-func (s *Server) Start(enabledHTTS bool) {
+func (s *HTTPServer) Start(enabledHTTS bool) {
 	go func() {
-		s.log.Info("Http Server listening on ", zap.String("addr", s.server.Addr))
+		s.log.Info("Http HTTPServer listening on ", zap.String("addr", s.server.Addr))
 		defer close(s.errors)
 
 		if enabledHTTS {
@@ -77,7 +77,7 @@ func (s *Server) Start(enabledHTTS bool) {
 }
 
 // Stop don't listen new connection and waiting close current active connection. Used for graceful shutdown
-func (s *Server) Stop(ctx context.Context) error {
+func (s *HTTPServer) Stop(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -85,11 +85,11 @@ func (s *Server) Stop(ctx context.Context) error {
 }
 
 // Notify return chan with error. For example include error "port already exists"
-func (s *Server) Notify() <-chan error {
+func (s *HTTPServer) Notify() <-chan error {
 	return s.errors
 }
 
-func (s *Server) generateFilesForTLS() ([]byte, []byte, error) {
+func (s *HTTPServer) generateFilesForTLS() ([]byte, []byte, error) {
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(1658),
 		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},

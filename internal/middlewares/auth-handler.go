@@ -2,15 +2,14 @@ package middlewares
 
 import (
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/sha256"
-	"encoding/hex"
 	"net/http"
 
-	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
-	"github.com/shreyner/go-shortener/internal/pkg/random"
+	"github.com/shreyner/go-shortener/internal/service"
 )
 
 // UserCtxKey uniq key for save user ID in context
@@ -19,38 +18,28 @@ type UserCtxKey int
 const userCtxKey UserCtxKey = iota
 
 var (
-	lengthUserID  = 5
 	authCookieKey = "auth"
+	tokenKey      = "token"
 )
 
-// GetUserIDFromCtx return user ID from contect
-func GetUserIDFromCtx(ctx context.Context) string {
-	v, _ := ctx.Value(userCtxKey).(string)
-	return v
+type authService interface {
+	GenerateUserID() string
+	CreateToken(userID string) string
+	GetUserIDFromToken(token string) (string, error)
+}
+
+// GetUserIDCtx return user ID from context
+func GetUserIDCtx(ctx context.Context) (string, bool) {
+	v, ok := ctx.Value(userCtxKey).(string)
+	return v, ok
+}
+
+func SetUserIDCtx(parentCtx context.Context, userID string) context.Context {
+	return context.WithValue(parentCtx, userCtxKey, userID)
 }
 
 // AuthHandler for auth users and create if not found auth cookies
-func AuthHandler(log *zap.Logger, key []byte) func(next http.Handler) http.Handler {
-	sh := sha256.New()
-	sh.Write(key)
-
-	keyHash := sh.Sum(nil)
-
-	aesBlock, err := aes.NewCipher(keyHash)
-	if err != nil {
-		// TODO: Убрать Fatalln. Обычный error. Сделать выбрасывание http ошибки
-		log.Fatal("error", zap.Error(err))
-	}
-
-	aesGCM, err := cipher.NewGCM(aesBlock)
-	if err != nil {
-		// TODO: Убрать Fatalln. Обычный error. Сделать выбрасывание http ошибки
-		// TODO: Пробежаться и посомтреть по коду
-		log.Fatal("error", zap.Error(err))
-	}
-
-	nonce := keyHash[len(keyHash)-aesGCM.NonceSize():]
-
+func AuthHandler(authService authService) func(next http.Handler) http.Handler {
 	parseCookie := func(r *http.Request) (string, error) {
 		authCookie, err := r.Cookie(authCookieKey)
 
@@ -58,48 +47,72 @@ func AuthHandler(log *zap.Logger, key []byte) func(next http.Handler) http.Handl
 			return "", err
 		}
 
-		v, err := hex.DecodeString(authCookie.Value)
+		userID, err := authService.GetUserIDFromToken(authCookie.Value)
 
 		if err != nil {
 			return "", err
 		}
 
-		userID, err := aesGCM.Open(nil, nonce, v, nil)
-
-		if err != nil {
-			return "", err
-		}
-
-		return string(userID), nil
+		return userID, nil
 	}
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			userID, err := parseCookie(r)
+			ctx := r.Context()
 
 			if err != nil {
-				newUserID := generateUserID()
+				newUserID := authService.GenerateUserID()
 
-				dst := aesGCM.Seal(nil, nonce, []byte(newUserID), nil)
+				dst := authService.CreateToken(newUserID)
 
-				authCookie := &http.Cookie{Value: hex.EncodeToString(dst), Name: authCookieKey}
+				authCookie := &http.Cookie{Value: dst, Name: authCookieKey}
 
 				http.SetCookie(rw, authCookie)
 
-				ctx := context.WithValue(r.Context(), userCtxKey, newUserID)
+				ctx = SetUserIDCtx(ctx, newUserID)
 
 				next.ServeHTTP(rw, r.WithContext(ctx))
 
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), userCtxKey, userID)
+			ctx = SetUserIDCtx(ctx, userID)
 
 			next.ServeHTTP(rw, r.WithContext(ctx))
 		})
 	}
 }
 
-func generateUserID() string {
-	return random.RandSeq(lengthUserID)
+func AuthInterceptor(authService *service.AuthService) grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (resp interface{}, err error) {
+		md, ok := metadata.FromIncomingContext(ctx)
+
+		if !ok {
+			return handler(ctx, req)
+		}
+
+		var token string
+
+		if value := md.Get(tokenKey); len(value) > 0 {
+			token = value[0]
+		}
+
+		if token == "" {
+			return handler(ctx, req)
+		}
+
+		userID, err := authService.GetUserIDFromToken(token)
+
+		if err != nil {
+			return nil, status.Error(codes.Unauthenticated, "invalid token")
+		}
+
+		return handler(SetUserIDCtx(ctx, userID), req)
+	}
 }

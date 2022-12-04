@@ -17,13 +17,18 @@ import (
 
 // @host localhost:8080
 
-var cookieSecretKey = []byte("triy6n9rw3")
+type authService interface {
+	GenerateUserID() string
+	CreateToken(userID string) string
+	GetUserIDFromToken(token string) (string, error)
+}
 
 // NewRouter init and create all handler on route
 func NewRouter(
 	log *zap.Logger,
 	baseURL string,
 	shorterService ShortedService,
+	authService authService,
 	shortURIRepository repositories.ShortURLRepository,
 	storage *storage.Storage,
 	fansShortService *fans.FansShortService,
@@ -36,7 +41,7 @@ func NewRouter(
 	r.Use(middlewares.NewStructuredLogger(log))
 	r.Use(chiMiddleware.Recoverer)
 
-	authMiddleware := middlewares.AuthHandler(log, cookieSecretKey)
+	authMiddleware := middlewares.AuthHandler(authService)
 	realIPMiddleware := middlewares.RealIP
 	cidrAccessMiddleware, _ := middlewares.CIDRAccess(trustedSubnet) // 192.168.88.0/24,127.0.0.1/32
 

@@ -108,7 +108,7 @@ func (s *shortURLRepository) AllByUserID(_ context.Context, id string) ([]*core.
 			return nil, err
 		}
 
-		if shortURL.UserID != "" && shortURL.UserID == id {
+		if shortURL.UserID.Valid && shortURL.UserID.String == id {
 			result = append(result, &shortURL)
 		}
 	}
