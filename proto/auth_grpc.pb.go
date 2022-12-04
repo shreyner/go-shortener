@@ -30,10 +30,12 @@ type authClient struct {
 	cc grpc.ClientConnInterface
 }
 
+// NewAuthClient -
 func NewAuthClient(cc grpc.ClientConnInterface) AuthClient {
 	return &authClient{cc}
 }
 
+// GetToken -
 func (c *authClient) GetToken(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetTokenResponse, error) {
 	out := new(GetTokenResponse)
 	err := c.cc.Invoke(ctx, "/auth.Auth/GetToken", in, out, opts...)
@@ -55,6 +57,7 @@ type AuthServer interface {
 type UnimplementedAuthServer struct {
 }
 
+// GetToken
 func (UnimplementedAuthServer) GetToken(context.Context, *Empty) (*GetTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetToken not implemented")
 }
@@ -67,6 +70,7 @@ type UnsafeAuthServer interface {
 	mustEmbedUnimplementedAuthServer()
 }
 
+// RegisterAuthServer -
 func RegisterAuthServer(s grpc.ServiceRegistrar, srv AuthServer) {
 	s.RegisterService(&Auth_ServiceDesc, srv)
 }

@@ -21,12 +21,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Empty -
 type Empty struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
+// Reset -
 func (x *Empty) Reset() {
 	*x = Empty{}
 	if protoimpl.UnsafeEnabled {
@@ -36,12 +38,15 @@ func (x *Empty) Reset() {
 	}
 }
 
+// String -
 func (x *Empty) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
+// ProtoMessage -
 func (*Empty) ProtoMessage() {}
 
+// ProtoReflect -
 func (x *Empty) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_auth_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
@@ -54,11 +59,13 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+// Descriptor -
 // Deprecated: Use Empty.ProtoReflect.Descriptor instead.
 func (*Empty) Descriptor() ([]byte, []int) {
 	return file_proto_auth_proto_rawDescGZIP(), []int{0}
 }
 
+// GetTokenResponse -
 type GetTokenResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -67,6 +74,7 @@ type GetTokenResponse struct {
 	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 }
 
+// Reset -
 func (x *GetTokenResponse) Reset() {
 	*x = GetTokenResponse{}
 	if protoimpl.UnsafeEnabled {
@@ -76,12 +84,15 @@ func (x *GetTokenResponse) Reset() {
 	}
 }
 
+// String -
 func (x *GetTokenResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
+// ProtoMessage -
 func (*GetTokenResponse) ProtoMessage() {}
 
+// ProtoReflect -
 func (x *GetTokenResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_auth_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
@@ -94,11 +105,13 @@ func (x *GetTokenResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+// Descriptor -
 // Deprecated: Use GetTokenResponse.ProtoReflect.Descriptor instead.
 func (*GetTokenResponse) Descriptor() ([]byte, []int) {
 	return file_proto_auth_proto_rawDescGZIP(), []int{1}
 }
 
+// GetToken -
 func (x *GetTokenResponse) GetToken() string {
 	if x != nil {
 		return x.Token
@@ -106,6 +119,7 @@ func (x *GetTokenResponse) GetToken() string {
 	return ""
 }
 
+// File_proto_auth_proto -
 var File_proto_auth_proto protoreflect.FileDescriptor
 
 var file_proto_auth_proto_rawDesc = []byte{
