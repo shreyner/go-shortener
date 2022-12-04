@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// GRPCServer Base grps server
 type GRPCServer struct {
 	log    *zap.Logger
 	errors chan error
@@ -15,6 +16,7 @@ type GRPCServer struct {
 	listen net.Listener
 }
 
+// NewGRPCServer constructor
 func NewGRPCServer(log *zap.Logger, address string, interceptors ...grpc.UnaryServerInterceptor) (*GRPCServer, error) {
 	grpcServer := GRPCServer{
 		log:    log,
@@ -34,6 +36,7 @@ func NewGRPCServer(log *zap.Logger, address string, interceptors ...grpc.UnarySe
 	return &grpcServer, nil
 }
 
+// Start async listen service
 func (s *GRPCServer) Start() {
 	go func() {
 		s.log.Info("gRPC server listen on ", zap.String("addr", s.listen.Addr().String()))
@@ -43,6 +46,7 @@ func (s *GRPCServer) Start() {
 	}()
 }
 
+// Stop close grpc server
 func (s *GRPCServer) Stop() error {
 	s.log.Info("gRPC server stopped...")
 	s.Server.GracefulStop()
@@ -50,6 +54,7 @@ func (s *GRPCServer) Stop() error {
 	return s.listen.Close()
 }
 
+// Notify return chain with error
 func (s *GRPCServer) Notify() <-chan error {
 	return s.errors
 }

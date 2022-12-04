@@ -34,6 +34,7 @@ func GetUserIDCtx(ctx context.Context) (string, bool) {
 	return v, ok
 }
 
+// SetUserIDCtx set userID in context
 func SetUserIDCtx(parentCtx context.Context, userID string) context.Context {
 	return context.WithValue(parentCtx, userCtxKey, userID)
 }
@@ -84,6 +85,7 @@ func AuthHandler(authService authService) func(next http.Handler) http.Handler {
 	}
 }
 
+// AuthInterceptor interceptor for auth in grpc
 func AuthInterceptor(authService *service.AuthService) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,

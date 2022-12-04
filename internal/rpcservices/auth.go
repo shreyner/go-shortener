@@ -13,6 +13,7 @@ var (
 	_ pb.AuthServer = (*AuthServer)(nil)
 )
 
+// AuthServer base auth grpc server
 type AuthServer struct {
 	pb.UnimplementedAuthServer
 
@@ -20,6 +21,7 @@ type AuthServer struct {
 	authService *service.AuthService
 }
 
+// NewAuthServer constructor
 func NewAuthServer(log *zap.Logger, authService *service.AuthService) *AuthServer {
 	return &AuthServer{
 		log:         log,
@@ -27,6 +29,7 @@ func NewAuthServer(log *zap.Logger, authService *service.AuthService) *AuthServe
 	}
 }
 
+// GetToken create token for identify next requests
 func (s *AuthServer) GetToken(_ context.Context, _ *pb.Empty) (*pb.GetTokenResponse, error) {
 	var getTokenResponse pb.GetTokenResponse
 
