@@ -59,6 +59,23 @@ func (m *MyMockService) CreateBatch(ctx context.Context, shortURLs *[]*core.Shor
 	return args.Error(0)
 }
 
+type AuthMockService struct {
+	mock.Mock
+}
+
+func (m *AuthMockService) GenerateUserID() string {
+	return m.Called().String(0)
+}
+
+func (m *AuthMockService) CreateToken(userID string) string {
+	return m.Called(userID).String(0)
+}
+
+func (m *AuthMockService) GetUserIDFromToken(token string) (string, error) {
+	args := m.Called()
+	return args.String(0), args.Error(1)
+}
+
 func testRequest(t *testing.T, ts *httptest.Server, method, path, contentType, accept, body string) (*http.Response, string) {
 	req, err := http.NewRequest(method, ts.URL+path, bytes.NewBufferString(body))
 
@@ -96,29 +113,54 @@ func testRequest(t *testing.T, ts *httptest.Server, method, path, contentType, a
 func TestShortedHandler_ShortedCreate(t *testing.T) {
 	t.Run("should success create", func(t *testing.T) {
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(
+			zap.NewNop(),
+			"http://localhost:8080",
+			mockService,
+			authMockService,
+			nil,
+			nil,
+			nil,
+			"",
+		)
 		ts := httptest.NewServer(r)
 
 		mockService.On("Create", mock.Anything, "https://ya.ru/").Return(
 			&core.ShortURL{URL: "https://ya.ru/", ID: "ya"},
 			nil,
 		)
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, respBody := testRequest(t, ts, http.MethodPost, "/", ContentType, "", "https://ya.ru/")
 		defer resp.Body.Close()
 
 		mockService.AssertExpectations(t)
-		mockService.AssertCalled(t, "Create", mock.AnythingOfType("string"), "https://ya.ru/")
+		mockService.AssertCalled(t, "Create", mock.Anything, "https://ya.ru/")
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 		assert.Equal(t, "http://localhost:8080/ya", respBody)
 	})
 
 	t.Run("should error for incorrect url", func(t *testing.T) {
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(
+			zap.NewNop(),
+			"http://localhost:8080",
+			mockService,
+			authMockService,
+			nil,
+			nil,
+			nil,
+			"",
+		)
 		ts := httptest.NewServer(r)
+
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/", ContentType, "", "yyy")
 		defer resp.Body.Close()
@@ -129,9 +171,22 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 
 	t.Run("should error for incorrect Content-Type", func(t *testing.T) {
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(
+			zap.NewNop(),
+			"http://localhost:8080",
+			mockService,
+			authMockService,
+			nil,
+			nil,
+			nil,
+			"",
+		)
 		ts := httptest.NewServer(r)
+
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/", "text/html; charset=utf8", "", "https://ya.ru/")
 		defer resp.Body.Close()
@@ -142,9 +197,22 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 
 	t.Run("should error method not allowed for POST /some", func(t *testing.T) {
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(
+			zap.NewNop(),
+			"http://localhost:8080",
+			mockService,
+			authMockService,
+			nil,
+			nil,
+			nil,
+			"",
+		)
 		ts := httptest.NewServer(r)
+
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/some", ContentType, "", "https://ya.ru/")
 		defer resp.Body.Close()
@@ -171,11 +239,23 @@ func TestShortedHandler_ShortedCreate(t *testing.T) {
 func TestShortedHandler_ShortedGet(t *testing.T) {
 	t.Run("should success redirect", func(t *testing.T) {
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(
+			zap.NewNop(),
+			"http://localhost:8080",
+			mockService,
+			authMockService,
+			nil,
+			nil,
+			nil,
+			"",
+		)
 		ts := httptest.NewServer(r)
 
 		mockService.On("GetByID", "asdd").Return(&core.ShortURL{ID: "asdd", URL: "https://ya.ru"}, true)
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, _ := testRequest(t, ts, http.MethodGet, "/asdd", "", "", "")
 		defer resp.Body.Close()
@@ -188,11 +268,23 @@ func TestShortedHandler_ShortedGet(t *testing.T) {
 
 	t.Run("should error for not found by id", func(t *testing.T) {
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(
+			zap.NewNop(),
+			"http://localhost:8080",
+			mockService,
+			authMockService,
+			nil,
+			nil,
+			nil,
+			"",
+		)
 		ts := httptest.NewServer(r)
 
 		mockService.On("GetByID", "not").Return(&core.ShortURL{}, false)
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, _ := testRequest(t, ts, http.MethodGet, "/not", "", "", "")
 		defer resp.Body.Close()
@@ -208,11 +300,23 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		contentType := "application/json"
 		acceptType := "application/json"
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(
+			zap.NewNop(),
+			"http://localhost:8080",
+			mockService,
+			authMockService,
+			nil,
+			nil,
+			nil,
+			"",
+		)
 		ts := httptest.NewServer(r)
 
 		mockService.On("Create", mock.Anything, "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, respBody := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, acceptType, `{"url":"https://ya.ru/"}`)
 		defer resp.Body.Close()
@@ -227,11 +331,14 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		contentType := "application/json"
 		acceptType := "application/json"
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, authMockService, nil, nil, nil, "")
 		ts := httptest.NewServer(r)
 
 		mockService.On("Create", mock.Anything, "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, respBody := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, acceptType, "{\"url\":\"https://ya.ru/\"}")
 		defer resp.Body.Close()
@@ -247,11 +354,23 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 		contentType := "application/json"
 		acceptType := "application/json"
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(
+			zap.NewNop(),
+			"http://localhost:8080",
+			mockService,
+			authMockService,
+			nil,
+			nil,
+			nil,
+			"",
+		)
 		ts := httptest.NewServer(r)
 
 		mockService.On("Create", mock.Anything, "https://ya.ru/").Return(&core.ShortURL{URL: "https://ya.ru/", ID: "ya"}, nil)
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, acceptType, "{\"url\":\"ya\"}")
 		defer resp.Body.Close()
@@ -263,9 +382,13 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 	t.Run("should error for incorrect Content-Type", func(t *testing.T) {
 		acceptType := "application/json"
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, authMockService, nil, nil, nil, "")
 		ts := httptest.NewServer(r)
+
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/api/shorten", "text/plain", acceptType, "{\"url\":\"https://ya.ru/\"}")
 		defer resp.Body.Close()
@@ -277,9 +400,13 @@ func TestShortedHandler_ApiCreate(t *testing.T) {
 	t.Run("should error for incorrect Accept", func(t *testing.T) {
 		contentType := "application/json"
 		mockService := new(MyMockService)
+		authMockService := new(AuthMockService)
 
-		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, nil, nil, nil, "")
+		r := NewRouter(zap.NewNop(), "http://localhost:8080", mockService, authMockService, nil, nil, nil, "")
 		ts := httptest.NewServer(r)
+
+		authMockService.On("GenerateUserID").Return("123")
+		authMockService.On("CreateToken", "123").Return("44444")
 
 		resp, _ := testRequest(t, ts, http.MethodPost, "/api/shorten", contentType, "application/xml", "{\"url\":\"https://ya.ru/\"}")
 		defer resp.Body.Close()
@@ -299,14 +426,12 @@ func BenchmarkShortedHandler_APICreate(b *testing.B) {
 	)
 	defer memoRepository.Close()
 
-	service := service2.NewService(
-		memoRepository.ShortURL,
-	)
+	service := service2.NewShorter(memoRepository.ShortURL)
 
 	shortedHandler := NewShortedHandler(
 		zap.NewNop(),
 		"http://localhost:8080",
-		service.ShorterService,
+		service,
 		memoRepository.ShortURL,
 		nil,
 	)

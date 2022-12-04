@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package="go-shortener/proto";
+
+message Empty{}
+
+message GetTokenResponse {
+  string token = 1;
+}
+
+service Auth {
+  rpc GetToken(Empty) returns(GetTokenResponse);
+}

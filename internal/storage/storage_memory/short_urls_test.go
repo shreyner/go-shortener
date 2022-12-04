@@ -2,6 +2,7 @@ package storagememory
 
 import (
 	"context"
+	"database/sql"
 	"reflect"
 	"sync"
 	"testing"
@@ -29,9 +30,12 @@ func Test_shortURLRepository_Add(t *testing.T) {
 			mutex: &sync.RWMutex{},
 		}
 		shortURL := &core.ShortURL{
-			ID:        "1",
-			URL:       "https://vk.com",
-			UserID:    "1",
+			ID:  "1",
+			URL: "https://vk.com",
+			UserID: sql.NullString{
+				String: "1",
+				Valid:  true,
+			},
 			IsDeleted: false,
 		}
 
@@ -48,15 +52,21 @@ func Test_shortURLRepository_Add(t *testing.T) {
 func Test_shortURLRepository_GetByID(t *testing.T) {
 	storeMap := map[string]*core.ShortURL{
 		"1": {
-			ID:        "1",
-			URL:       "https://vk.com",
-			UserID:    "1",
+			ID:  "1",
+			URL: "https://vk.com",
+			UserID: sql.NullString{
+				String: "1",
+				Valid:  true,
+			},
 			IsDeleted: false,
 		},
 		"2": {
-			ID:        "2",
-			URL:       "https://vk.com/2",
-			UserID:    "1",
+			ID:  "2",
+			URL: "https://vk.com/2",
+			UserID: sql.NullString{
+				String: "1",
+				Valid:  true,
+			},
 			IsDeleted: false,
 		},
 	}
@@ -88,27 +98,39 @@ func Test_shortURLRepository_GetByID(t *testing.T) {
 func Test_shortURLRepository_AllByUserID(t *testing.T) {
 	storeMap := map[string]*core.ShortURL{
 		"1": {
-			ID:        "1",
-			URL:       "https://vk.com",
-			UserID:    "1",
+			ID:  "1",
+			URL: "https://vk.com",
+			UserID: sql.NullString{
+				String: "1",
+				Valid:  true,
+			},
 			IsDeleted: false,
 		},
 		"2": {
-			ID:        "2",
-			URL:       "https://vk.com/2",
-			UserID:    "1",
+			ID:  "2",
+			URL: "https://vk.com/2",
+			UserID: sql.NullString{
+				String: "1",
+				Valid:  true,
+			},
 			IsDeleted: false,
 		},
 		"3": {
-			ID:        "3",
-			URL:       "https://vk.com/3",
-			UserID:    "3",
+			ID:  "3",
+			URL: "https://vk.com/3",
+			UserID: sql.NullString{
+				String: "3",
+				Valid:  true,
+			},
 			IsDeleted: false,
 		},
 		"4": {
-			ID:        "4",
-			URL:       "https://vk.com/4",
-			UserID:    "4",
+			ID:  "4",
+			URL: "https://vk.com/4",
+			UserID: sql.NullString{
+				String: "4",
+				Valid:  true,
+			},
 			IsDeleted: false,
 		},
 	}
@@ -153,27 +175,39 @@ func Test_shortURLRepository_DeleteURLsUserByIds(t *testing.T) {
 	t.Run("should success delete URLs by ids", func(t *testing.T) {
 		storeMap := map[string]*core.ShortURL{
 			"1": {
-				ID:        "1",
-				URL:       "https://vk.com",
-				UserID:    "1",
+				ID:  "1",
+				URL: "https://vk.com",
+				UserID: sql.NullString{
+					String: "1",
+					Valid:  true,
+				},
 				IsDeleted: false,
 			},
 			"2": {
-				ID:        "2",
-				URL:       "https://vk.com/2",
-				UserID:    "1",
+				ID:  "2",
+				URL: "https://vk.com/2",
+				UserID: sql.NullString{
+					String: "1",
+					Valid:  true,
+				},
 				IsDeleted: false,
 			},
 			"3": {
-				ID:        "3",
-				URL:       "https://vk.com/3",
-				UserID:    "3",
+				ID:  "3",
+				URL: "https://vk.com/3",
+				UserID: sql.NullString{
+					String: "3",
+					Valid:  true,
+				},
 				IsDeleted: false,
 			},
 			"4": {
-				ID:        "4",
-				URL:       "https://vk.com/4",
-				UserID:    "4",
+				ID:  "4",
+				URL: "https://vk.com/4",
+				UserID: sql.NullString{
+					String: "4",
+					Valid:  true,
+				},
 				IsDeleted: false,
 			},
 		}

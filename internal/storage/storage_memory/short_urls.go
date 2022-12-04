@@ -56,7 +56,7 @@ func (s *shortURLRepository) AllByUserID(_ context.Context, id string) ([]*core.
 	var result []*core.ShortURL
 
 	for _, shortURL := range s.store {
-		if shortURL.UserID != "" && shortURL.UserID == id {
+		if shortURL.UserID.Valid && shortURL.UserID.String == id {
 			result = append(result, shortURL)
 		}
 	}
@@ -84,7 +84,7 @@ func (s *shortURLRepository) DeleteURLsUserByIds(_ context.Context, userID strin
 	for _, id := range ids {
 		shortURL, ok := s.store[id]
 
-		if !ok || shortURL.UserID != userID {
+		if !ok || (shortURL.UserID.Valid && shortURL.UserID.String != userID) {
 			continue
 		}
 
@@ -102,8 +102,12 @@ func (s *shortURLRepository) GetStats(_ context.Context) (*core.ShortStats, erro
 	setUsers := make(map[string]byte)
 
 	for _, url := range s.store {
-		if _, ok := setUsers[url.UserID]; !ok {
-			setUsers[url.UserID] = 1
+		if !url.UserID.Valid {
+			continue
+		}
+
+		if _, ok := setUsers[url.UserID.String]; !ok {
+			setUsers[url.UserID.String] = 1
 		}
 	}
 

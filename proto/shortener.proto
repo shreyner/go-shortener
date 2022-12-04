@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package shortener;
+
+option go_package="go-shortener/proto";
+
+message CreateShortRequest {
+  string url = 1;
+}
+
+message CreateShortResponse {
+  string id = 1;
+  string error = 2;
+}
+
+
+message CreateBatchShortRequest {
+  message URLs {
+      string url = 1;
+      string correlationId = 2;
+  }
+
+  repeated URLs urls = 1;
+}
+
+message CreateBatchShortResponse {
+  message URL {
+    string id = 1;
+    string correlationId = 2;
+  }
+
+  repeated URL urls = 1;
+  string error = 2;
+}
+
+message ListUserURLsRequest {}
+
+message ListUserURLsResponse {
+  message URL {
+    string id = 1;
+    string originalURL = 2;
+  }
+
+  repeated URL urls = 1;
+}
+
+message DeleteByIDsRequest {
+  repeated string ids = 1;
+}
+
+message DeleteByIDsResponse {
+}
+
+service Shortener {
+  rpc CreateShort(CreateShortRequest) returns (CreateShortResponse);
+  rpc CreateBatchShort(CreateBatchShortRequest) returns (CreateBatchShortResponse);
+  rpc ListUserURLs(ListUserURLsRequest) returns (ListUserURLsResponse);
+  rpc DeleteByIDs(DeleteByIDsRequest) returns (DeleteByIDsResponse);
+}

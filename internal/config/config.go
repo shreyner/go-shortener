@@ -27,6 +27,7 @@ type Config struct {
 	DataBaseDSN     string `json:"database_dsn" env:"DATABASE_DSN"`
 	Config          string `json:"-" env:"CONFIG"`
 	TrustedSubnet   string `json:"trusted_subnet"`
+	SignKey         string `json:"sign_key" env:"SIGN_KEY" envDefault:"triy6n9rw3"`
 	EnabledHTTPS    bool   `json:"enable_https" env:"ENABLE_HTTPS"`
 }
 
@@ -43,6 +44,7 @@ func (c *Config) Parse() error {
 	flag.StringVar(&c.DataBaseDSN, "d", c.DataBaseDSN, "Конфиг подключения к db")
 	flag.BoolVar(&c.EnabledHTTPS, "s", c.EnabledHTTPS, "HTTPS соединение")
 	flag.StringVar(&c.TrustedSubnet, "t", c.TrustedSubnet, "CIDR для доступа к /internal")
+	flag.StringVar(&c.SignKey, "sign-key", c.SignKey, "signed cookie key")
 
 	flag.Parse()
 
@@ -102,6 +104,10 @@ func (c *Config) ParseConfigFile(name string) error {
 
 	if c.TrustedSubnet == "" && configJSON.TrustedSubnet != "" {
 		c.TrustedSubnet = configJSON.TrustedSubnet
+	}
+
+	if c.SignKey == "triy6n9rw3" && configJSON.SignKey != "" {
+		c.SignKey = configJSON.SignKey
 	}
 
 	return nil
