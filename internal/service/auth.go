@@ -9,11 +9,13 @@ import (
 
 var lengthUserID = 5
 
+// AuthService include base method for authantification in service
 type AuthService struct {
 	log        *zap.Logger
 	stringSign *sign.StringSign
 }
 
+// NewAuthService constructor
 func NewAuthService(log *zap.Logger, signKey []byte) (*AuthService, error) {
 	stringSign, err := sign.NewStringSign(signKey)
 
@@ -36,10 +38,12 @@ func (s *AuthService) GenerateUserID() string {
 	return generateUserID()
 }
 
+// CreateToken by userID
 func (s *AuthService) CreateToken(userID string) string {
 	return s.stringSign.Encrypt(userID)
 }
 
+// GetUserIDFromToken by token
 func (s *AuthService) GetUserIDFromToken(token string) (string, error) {
 	return s.stringSign.Decrypt(token)
 }

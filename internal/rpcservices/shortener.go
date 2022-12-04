@@ -29,6 +29,7 @@ type shortedService interface {
 	AllByUser(ctx context.Context, id string) ([]*core.ShortURL, error)
 }
 
+// ShortenerServer base shortner handler for grpc server
 type ShortenerServer struct {
 	pb.UnimplementedShortenerServer
 
@@ -37,6 +38,7 @@ type ShortenerServer struct {
 	fansShortService *fans.FansShortService
 }
 
+// NewShortenerServer constructor
 func NewShortenerServer(
 	log *zap.Logger,
 	service shortedService,
@@ -49,6 +51,7 @@ func NewShortenerServer(
 	}
 }
 
+// CreateShort create new short by url
 func (s *ShortenerServer) CreateShort(
 	ctx context.Context,
 	in *pb.CreateShortRequest,
@@ -57,12 +60,12 @@ func (s *ShortenerServer) CreateShort(
 	var response pb.CreateShortResponse
 
 	if in.Url == "" {
-		response.Error = fmt.Sprint("url is required")
+		response.Error = "url is required"
 		return &response, nil
 	}
 
 	if _, err := url.Parse(in.Url); err != nil {
-		response.Error = fmt.Sprint("invalid url")
+		response.Error = "invalid url"
 		return &response, nil
 	}
 
@@ -85,6 +88,7 @@ func (s *ShortenerServer) CreateShort(
 	return &response, nil
 }
 
+// CreateBatchShort create batch sorts by urls
 func (s *ShortenerServer) CreateBatchShort(
 	ctx context.Context,
 	in *pb.CreateBatchShortRequest,
@@ -135,6 +139,7 @@ func (s *ShortenerServer) CreateBatchShort(
 	return &response, nil
 }
 
+// ListUserURLs return list shorted was created user
 func (s *ShortenerServer) ListUserURLs(
 	ctx context.Context,
 	_ *pb.ListUserURLsRequest,
@@ -157,12 +162,12 @@ func (s *ShortenerServer) ListUserURLs(
 	responseList := make([]*pb.ListUserURLsResponse_URL, len(list))
 
 	for i, shortURL := range list {
-		responseUrl := pb.ListUserURLsResponse_URL{
+		responseURL := pb.ListUserURLsResponse_URL{
 			Id:          shortURL.ID,
 			OriginalURL: shortURL.URL,
 		}
 
-		responseList[i] = &responseUrl
+		responseList[i] = &responseURL
 	}
 
 	listUserURLsResponse.Urls = responseList
@@ -170,6 +175,7 @@ func (s *ShortenerServer) ListUserURLs(
 	return &listUserURLsResponse, nil
 }
 
+// DeleteByIDs delete by ids for current user
 func (s *ShortenerServer) DeleteByIDs(
 	ctx context.Context,
 	in *pb.DeleteByIDsRequest,
