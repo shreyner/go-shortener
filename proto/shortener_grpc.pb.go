@@ -33,10 +33,12 @@ type shortenerClient struct {
 	cc grpc.ClientConnInterface
 }
 
+// NewShortenerClient
 func NewShortenerClient(cc grpc.ClientConnInterface) ShortenerClient {
 	return &shortenerClient{cc}
 }
 
+// CreateShort -
 func (c *shortenerClient) CreateShort(ctx context.Context, in *CreateShortRequest, opts ...grpc.CallOption) (*CreateShortResponse, error) {
 	out := new(CreateShortResponse)
 	err := c.cc.Invoke(ctx, "/shortener.Shortener/CreateShort", in, out, opts...)
@@ -46,6 +48,7 @@ func (c *shortenerClient) CreateShort(ctx context.Context, in *CreateShortReques
 	return out, nil
 }
 
+// CreateBatchShort -
 func (c *shortenerClient) CreateBatchShort(ctx context.Context, in *CreateBatchShortRequest, opts ...grpc.CallOption) (*CreateBatchShortResponse, error) {
 	out := new(CreateBatchShortResponse)
 	err := c.cc.Invoke(ctx, "/shortener.Shortener/CreateBatchShort", in, out, opts...)
@@ -55,6 +58,7 @@ func (c *shortenerClient) CreateBatchShort(ctx context.Context, in *CreateBatchS
 	return out, nil
 }
 
+// ListUserURLs -
 func (c *shortenerClient) ListUserURLs(ctx context.Context, in *ListUserURLsRequest, opts ...grpc.CallOption) (*ListUserURLsResponse, error) {
 	out := new(ListUserURLsResponse)
 	err := c.cc.Invoke(ctx, "/shortener.Shortener/ListUserURLs", in, out, opts...)
@@ -64,6 +68,7 @@ func (c *shortenerClient) ListUserURLs(ctx context.Context, in *ListUserURLsRequ
 	return out, nil
 }
 
+// DeleteByIDs -
 func (c *shortenerClient) DeleteByIDs(ctx context.Context, in *DeleteByIDsRequest, opts ...grpc.CallOption) (*DeleteByIDsResponse, error) {
 	out := new(DeleteByIDsResponse)
 	err := c.cc.Invoke(ctx, "/shortener.Shortener/DeleteByIDs", in, out, opts...)
@@ -88,15 +93,22 @@ type ShortenerServer interface {
 type UnimplementedShortenerServer struct {
 }
 
+// CreateShort -
 func (UnimplementedShortenerServer) CreateShort(context.Context, *CreateShortRequest) (*CreateShortResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateShort not implemented")
 }
+
+// CreateBatchShort -
 func (UnimplementedShortenerServer) CreateBatchShort(context.Context, *CreateBatchShortRequest) (*CreateBatchShortResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateBatchShort not implemented")
 }
+
+// ListUserURLs -
 func (UnimplementedShortenerServer) ListUserURLs(context.Context, *ListUserURLsRequest) (*ListUserURLsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUserURLs not implemented")
 }
+
+// DeleteByIDs -
 func (UnimplementedShortenerServer) DeleteByIDs(context.Context, *DeleteByIDsRequest) (*DeleteByIDsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteByIDs not implemented")
 }
@@ -109,6 +121,7 @@ type UnsafeShortenerServer interface {
 	mustEmbedUnimplementedShortenerServer()
 }
 
+// RegisterShortenerServer -
 func RegisterShortenerServer(s grpc.ServiceRegistrar, srv ShortenerServer) {
 	s.RegisterService(&Shortener_ServiceDesc, srv)
 }
