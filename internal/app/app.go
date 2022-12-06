@@ -6,17 +6,17 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/shreyner/go-shortener/internal/middlewares"
-	"github.com/shreyner/go-shortener/internal/rpcservices"
-	pb "github.com/shreyner/go-shortener/proto"
 	"go.uber.org/zap"
 
 	"github.com/shreyner/go-shortener/internal/config"
 	"github.com/shreyner/go-shortener/internal/handlers"
+	"github.com/shreyner/go-shortener/internal/middlewares"
 	"github.com/shreyner/go-shortener/internal/pkg/fans"
+	"github.com/shreyner/go-shortener/internal/rpcservices"
 	"github.com/shreyner/go-shortener/internal/server"
 	"github.com/shreyner/go-shortener/internal/service"
 	"github.com/shreyner/go-shortener/internal/storage"
+	pb "github.com/shreyner/go-shortener/proto"
 )
 
 // NewApp create shortener application and start http listen, db connection and waiting system signal for stop
